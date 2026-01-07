@@ -199,7 +199,7 @@ class _SplashViewState extends State<SplashView> with TickerProviderStateMixin {
 }
 
 // =============================================================================
-// 2. MAIN LAYOUT (The Core Navigator)
+// 2. MAIN LAYOUT (FIXED NAVIGATION LOGIC ✅)
 // =============================================================================
 class MainLayout extends StatefulWidget {
   const MainLayout({super.key});
@@ -210,33 +210,32 @@ class MainLayout extends StatefulWidget {
 class _MainLayoutState extends State<MainLayout> {
   int _selectedIndex = 0;
 
+  // ✅ FIX: Removed 'Navigator.pop' from here
   void _changeScreen(int index) {
     setState(() => _selectedIndex = index);
-    if (MediaQuery.of(context).size.width <= 800) Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
-    // ✅ Yaha saare pages hain
     final List<Widget> screens = [
-      HomeScreen(onNavigate: _changeScreen), // Index 0
-      const ChatScreen(), // Index 1 (Chat)
-      const TemplatesScreen(), // Index 2
-      const PDFScreen(), // Index 3
-      const ImageGenScreen(), // Index 4 (Image)
-      const CodeExpertScreen(), // Index 5
-      const VoiceScreen(), // Index 6
-      const UpgradeScreen(), // Index 7
+      HomeScreen(onNavigate: _changeScreen),
+      const ChatScreen(),
+      const TemplatesScreen(),
+      const PDFScreen(),
+      const ImageGenScreen(),
+      const CodeExpertScreen(),
+      const VoiceScreen(),
+      const UpgradeScreen(),
     ];
 
     bool isWideScreen = MediaQuery.of(context).size.width > 800;
 
     return Scaffold(
-      backgroundColor: Colors.black, // ✅ FORCE BLACK BACKGROUND
+      backgroundColor: Colors.black,
       extendBodyBehindAppBar: true,
       appBar: !isWideScreen
           ? AppBar(
-              backgroundColor: Colors.black, // ✅ AppBar bhi Black
+              backgroundColor: Colors.black,
               elevation: 0,
               iconTheme: const IconThemeData(color: Colors.white),
               title: const Text(
@@ -254,12 +253,16 @@ class _MainLayoutState extends State<MainLayout> {
               backgroundColor: Colors.black,
               child: SidebarContent(
                 selectedIndex: _selectedIndex,
-                onTap: _changeScreen,
+                onTap: (index) {
+                  // ✅ FIX: Only close drawer when clicking inside drawer
+                  _changeScreen(index);
+                  Navigator.pop(context);
+                },
               ),
             )
           : null,
       body: Container(
-        color: Colors.black, // ✅ Body bhi Black (Double Safety)
+        color: Colors.black,
         child: Row(
           children: [
             if (isWideScreen)
@@ -271,7 +274,7 @@ class _MainLayoutState extends State<MainLayout> {
                   onTap: _changeScreen,
                 ),
               ),
-            Expanded(child: screens[_selectedIndex]), // ✅ Content Yaha Badlega
+            Expanded(child: screens[_selectedIndex]),
           ],
         ),
       ),
@@ -408,7 +411,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.black, // ✅ FIX: Force Black Background
+      color: Colors.black,
       child: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(25),
@@ -433,8 +436,8 @@ class HomeScreen extends StatelessWidget {
               // ✅ CARD 1: Talk (Navigates to Index 1)
               GestureDetector(
                 onTap: () {
-                  print("Navigating to Chat..."); // Debug Log
-                  onNavigate(1);
+                  print("Navigating to Chat...");
+                  onNavigate(1); // ✅ FIX: Now this will NOT close the app
                 },
                 child: Container(
                   width: double.infinity,
@@ -490,8 +493,8 @@ class HomeScreen extends StatelessWidget {
               // ✅ CARD 2: Image (Navigates to Index 4)
               GestureDetector(
                 onTap: () {
-                  print("Navigating to Image..."); // Debug Log
-                  onNavigate(4);
+                  print("Navigating to Image...");
+                  onNavigate(4); // ✅ FIX: This works now
                 },
                 child: Container(
                   padding: const EdgeInsets.all(25),
@@ -543,7 +546,7 @@ class HomeScreen extends StatelessWidget {
 }
 
 // =============================================================================
-// 4. CHAT SCREEN
+// 4. CHAT SCREEN (FIXED UI)
 // =============================================================================
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -581,10 +584,7 @@ class _ChatScreenState extends State<ChatScreen> {
     if (mounted) {
       setState(() {
         _isTyping = false;
-        _messages.add({
-          "role": "ai",
-          "text": aiResponse ?? "Could not connect to Brain.",
-        });
+        _messages.add({"role": "ai", "text": aiResponse ?? "Error."});
       });
       _scrollController.animateTo(
         _scrollController.position.maxScrollExtent,
@@ -597,7 +597,7 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.black, // ✅ FIX: Force Black Background
+      color: Colors.black,
       child: Column(
         children: [
           const SizedBox(height: 20),
@@ -757,7 +757,7 @@ class TemplatesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.black, // ✅ Force Black
+      color: Colors.black,
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -821,7 +821,7 @@ class CodeExpertScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.black, // ✅ Force Black
+      color: Colors.black,
       padding: const EdgeInsets.all(20),
       child: Column(
         children: [
@@ -1101,7 +1101,7 @@ class _ImageGenScreenState extends State<ImageGenScreen> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.black, // ✅ Force Black
+      color: Colors.black,
       padding: const EdgeInsets.all(20),
       child: Column(
         children: [
@@ -1191,7 +1191,7 @@ class VoiceScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.black, // ✅ Force Black
+      color: Colors.black,
       child: Column(
         children: [
           Expanded(
@@ -1292,7 +1292,7 @@ class UpgradeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.black, // ✅ Force Black
+      color: Colors.black,
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
