@@ -26,11 +26,14 @@ dependencies:
   cloud_firestore: ^6.1.1
   google_generative_ai: ^0.4.7
 
-  # ✅ Voice & Files (Updated for Bug Fixes)
+  # ✅ Voice, Files & Camera (Updated)
   flutter_tts: ^3.8.3         # App bolega
-  speech_to_text: ^7.3.0      # ✅ FIX: Isse 6.6.1 se 7.3.0 kiya taki Error n aaye
+  speech_to_text: ^7.3.0      # Aapne jo update manga tha
   file_picker: ^8.0.0         # PDF/Zip upload karne ke liye
-  permission_handler: ^11.3.0 # Mic/File permission ke liye
+  permission_handler: ^11.3.0 # Permission ke liye
+  
+  # 🚨 YE MISSING THA (Iske bina Camera/Gallery nahi chalega)
+  image_picker: ^1.0.7
 
 dev_dependencies:
   flutter_test:

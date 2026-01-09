@@ -10138,3 +10138,462 @@
 [error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
 [debug] [2026-01-09T14:40:10.748Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
 [debug] [2026-01-09T14:40:10.748Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T16:27:54.421Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T16:27:54.427Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T16:27:54.429Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T16:27:54.430Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T16:27:54.431Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T16:27:54.432Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T16:27:54.432Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[debug] [2026-01-09T16:27:54.451Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T16:27:54.451Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T16:27:54.452Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[debug] [2026-01-09T16:27:54.602Z] Checked if tokens are valid: false, expires at: 1767973198171
+[debug] [2026-01-09T16:27:54.602Z] Checked if tokens are valid: false, expires at: 1767973198171
+[debug] [2026-01-09T16:27:54.603Z] > refreshing access token with scopes: []
+[debug] [2026-01-09T16:27:54.606Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-01-09T16:27:54.606Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-01-09T16:27:54.610Z] Checked if tokens are valid: false, expires at: 1767973198171
+[debug] [2026-01-09T16:27:54.610Z] Checked if tokens are valid: false, expires at: 1767973198171
+[debug] [2026-01-09T16:27:54.610Z] > refreshing access token with scopes: []
+[debug] [2026-01-09T16:27:54.611Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-01-09T16:27:54.611Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-01-09T16:27:54.648Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2026-01-09T16:27:54.649Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-01-09T16:27:54.659Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects//services/firebaseappdistribution.googleapis.com [none]
+[debug] [2026-01-09T16:27:54.659Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects//services/firebaseappdistribution.googleapis.com x-goog-quota-user=projects/
+[debug] [2026-01-09T16:27:54.664Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2026-01-09T16:27:54.664Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-01-09T16:27:54.673Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects//services/firebaseappdistribution.googleapis.com [none]
+[debug] [2026-01-09T16:27:54.674Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects//services/firebaseappdistribution.googleapis.com x-goog-quota-user=projects/
+[debug] [2026-01-09T16:27:55.615Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects//services/firebaseappdistribution.googleapis.com 400
+[debug] [2026-01-09T16:27:55.615Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects//services/firebaseappdistribution.googleapis.com [omitted]
+[debug] [2026-01-09T16:27:55.617Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T16:27:55.621Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T16:27:55.622Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T16:27:55.623Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T16:27:55.623Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T16:27:55.623Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[debug] [2026-01-09T16:27:55.624Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T16:27:55.624Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T16:27:55.625Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T16:27:55.640Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects//services/firebaseappdistribution.googleapis.com 400
+[debug] [2026-01-09T16:27:55.640Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects//services/firebaseappdistribution.googleapis.com [omitted]
+[debug] [2026-01-09T16:27:55.985Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T16:27:55.987Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T16:27:55.991Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T16:27:55.992Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T16:27:55.993Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T16:27:55.993Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T16:27:55.993Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[debug] [2026-01-09T16:27:55.994Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T16:27:55.994Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T16:27:55.994Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T16:27:56.006Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T16:27:56.007Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T16:27:56.008Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T16:27:56.008Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T16:27:56.008Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[debug] [2026-01-09T16:27:56.009Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T16:27:56.010Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T16:27:56.010Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T16:28:24.374Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T16:28:24.375Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T16:28:24.391Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T16:28:24.392Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T16:28:24.392Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T16:28:24.392Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T16:28:24.393Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[debug] [2026-01-09T16:28:24.393Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T16:28:24.394Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T16:28:24.394Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T16:28:24.397Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T16:28:24.397Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T16:28:24.398Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T16:28:24.398Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T16:28:24.398Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[debug] [2026-01-09T16:28:24.398Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T16:28:24.399Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T16:28:24.399Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T18:17:00.870Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T18:17:00.877Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T18:17:00.878Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T18:17:00.880Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T18:17:00.881Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T18:17:00.882Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T18:17:00.883Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[debug] [2026-01-09T18:17:00.909Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T18:17:00.910Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T18:17:00.910Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[debug] [2026-01-09T18:17:01.177Z] Checked if tokens are valid: false, expires at: 1767979673664
+[debug] [2026-01-09T18:17:01.179Z] Checked if tokens are valid: false, expires at: 1767979673664
+[debug] [2026-01-09T18:17:01.179Z] > refreshing access token with scopes: []
+[debug] [2026-01-09T18:17:01.182Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-01-09T18:17:01.183Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-01-09T18:17:01.187Z] Checked if tokens are valid: false, expires at: 1767979673664
+[debug] [2026-01-09T18:17:01.188Z] Checked if tokens are valid: false, expires at: 1767979673664
+[debug] [2026-01-09T18:17:01.188Z] > refreshing access token with scopes: []
+[debug] [2026-01-09T18:17:01.188Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-01-09T18:17:01.188Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-01-09T18:17:01.218Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2026-01-09T18:17:01.218Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-01-09T18:17:01.231Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects//services/firebaseappdistribution.googleapis.com [none]
+[debug] [2026-01-09T18:17:01.232Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects//services/firebaseappdistribution.googleapis.com x-goog-quota-user=projects/
+[debug] [2026-01-09T18:17:01.246Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2026-01-09T18:17:01.247Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-01-09T18:17:01.258Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects//services/firebaseappdistribution.googleapis.com [none]
+[debug] [2026-01-09T18:17:01.259Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects//services/firebaseappdistribution.googleapis.com x-goog-quota-user=projects/
+[debug] [2026-01-09T18:17:02.210Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects//services/firebaseappdistribution.googleapis.com 400
+[debug] [2026-01-09T18:17:02.211Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects//services/firebaseappdistribution.googleapis.com [omitted]
+[debug] [2026-01-09T18:17:02.212Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T18:17:02.219Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T18:17:02.220Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T18:17:02.221Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T18:17:02.221Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T18:17:02.221Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[debug] [2026-01-09T18:17:02.222Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T18:17:02.223Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T18:17:02.223Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T18:17:02.230Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T18:17:02.233Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T18:17:02.236Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects//services/firebaseappdistribution.googleapis.com 400
+[debug] [2026-01-09T18:17:02.236Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects//services/firebaseappdistribution.googleapis.com [omitted]
+[debug] [2026-01-09T18:17:02.238Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T18:17:02.239Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T18:17:02.239Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T18:17:02.239Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T18:17:02.240Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[debug] [2026-01-09T18:17:02.240Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T18:17:02.241Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T18:17:02.241Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T18:17:02.261Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T18:17:02.263Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T18:17:02.263Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T18:17:02.264Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T18:17:02.264Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[debug] [2026-01-09T18:17:02.265Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T18:17:02.265Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T18:17:02.266Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T18:17:03.887Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T18:17:03.891Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T18:17:03.894Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T18:17:03.895Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T18:17:03.895Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T18:17:03.896Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T18:17:03.896Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[debug] [2026-01-09T18:17:03.896Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T18:17:03.897Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T18:17:03.897Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T18:17:03.899Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T18:17:03.905Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T18:17:03.906Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T18:17:03.906Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T18:17:03.906Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[debug] [2026-01-09T18:17:03.906Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T18:17:03.907Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T18:17:03.907Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T18:39:50.987Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T18:39:50.992Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T18:39:50.993Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T18:39:50.994Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T18:39:50.995Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T18:39:50.996Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T18:39:50.996Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[debug] [2026-01-09T18:39:51.013Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T18:39:51.013Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T18:39:51.014Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[debug] [2026-01-09T18:39:51.159Z] Checked if tokens are valid: true, expires at: 1767986220247
+[debug] [2026-01-09T18:39:51.160Z] Checked if tokens are valid: true, expires at: 1767986220247
+[debug] [2026-01-09T18:39:51.161Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects//services/firebaseappdistribution.googleapis.com [none]
+[debug] [2026-01-09T18:39:51.161Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects//services/firebaseappdistribution.googleapis.com x-goog-quota-user=projects/
+[debug] [2026-01-09T18:39:51.165Z] Checked if tokens are valid: true, expires at: 1767986220247
+[debug] [2026-01-09T18:39:51.166Z] Checked if tokens are valid: true, expires at: 1767986220247
+[debug] [2026-01-09T18:39:51.166Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects//services/firebaseappdistribution.googleapis.com [none]
+[debug] [2026-01-09T18:39:51.166Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects//services/firebaseappdistribution.googleapis.com x-goog-quota-user=projects/
+[debug] [2026-01-09T18:39:52.116Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects//services/firebaseappdistribution.googleapis.com 400
+[debug] [2026-01-09T18:39:52.116Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects//services/firebaseappdistribution.googleapis.com [omitted]
+[debug] [2026-01-09T18:39:52.120Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects//services/firebaseappdistribution.googleapis.com 400
+[debug] [2026-01-09T18:39:52.120Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects//services/firebaseappdistribution.googleapis.com [omitted]
+[debug] [2026-01-09T18:39:52.121Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T18:39:52.127Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T18:39:52.128Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T18:39:52.129Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T18:39:52.129Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T18:39:52.130Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[debug] [2026-01-09T18:39:52.131Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T18:39:52.131Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T18:39:52.131Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T18:39:52.137Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T18:39:52.140Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T18:39:52.143Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T18:39:52.144Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T18:39:52.144Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T18:39:52.145Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T18:39:52.145Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[debug] [2026-01-09T18:39:52.146Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T18:39:52.146Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T18:39:52.147Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T18:39:52.158Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T18:39:52.159Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T18:39:52.159Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T18:39:52.159Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T18:39:52.159Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[debug] [2026-01-09T18:39:52.160Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T18:39:52.161Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T18:39:52.161Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T18:40:02.142Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T18:40:02.142Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T18:40:02.156Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T18:40:02.158Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T18:40:02.158Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T18:40:02.159Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T18:40:02.159Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[debug] [2026-01-09T18:40:02.159Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T18:40:02.160Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T18:40:02.160Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T18:40:02.162Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T18:40:02.163Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T18:40:02.163Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T18:40:02.163Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T18:40:02.164Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[debug] [2026-01-09T18:40:02.164Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T18:40:02.165Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T18:40:02.165Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T19:09:06.423Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T19:09:06.428Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T19:09:06.430Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T19:09:06.431Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T19:09:06.433Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T19:09:06.433Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T19:09:06.434Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[debug] [2026-01-09T19:09:06.459Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T19:09:06.459Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T19:09:06.460Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[debug] [2026-01-09T19:09:06.756Z] Checked if tokens are valid: false, expires at: 1767986220247
+[debug] [2026-01-09T19:09:06.756Z] Checked if tokens are valid: false, expires at: 1767986220247
+[debug] [2026-01-09T19:09:06.756Z] > refreshing access token with scopes: []
+[debug] [2026-01-09T19:09:06.761Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-01-09T19:09:06.761Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-01-09T19:09:06.767Z] Checked if tokens are valid: false, expires at: 1767986220247
+[debug] [2026-01-09T19:09:06.767Z] Checked if tokens are valid: false, expires at: 1767986220247
+[debug] [2026-01-09T19:09:06.767Z] > refreshing access token with scopes: []
+[debug] [2026-01-09T19:09:06.768Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-01-09T19:09:06.768Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-01-09T19:09:06.821Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2026-01-09T19:09:06.821Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-01-09T19:09:06.843Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects//services/firebaseappdistribution.googleapis.com [none]
+[debug] [2026-01-09T19:09:06.843Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects//services/firebaseappdistribution.googleapis.com x-goog-quota-user=projects/
+[debug] [2026-01-09T19:09:06.853Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2026-01-09T19:09:06.854Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-01-09T19:09:06.871Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects//services/firebaseappdistribution.googleapis.com [none]
+[debug] [2026-01-09T19:09:06.871Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects//services/firebaseappdistribution.googleapis.com x-goog-quota-user=projects/
+[debug] [2026-01-09T19:09:07.849Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects//services/firebaseappdistribution.googleapis.com 400
+[debug] [2026-01-09T19:09:07.849Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects//services/firebaseappdistribution.googleapis.com [omitted]
+[debug] [2026-01-09T19:09:07.851Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T19:09:07.868Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T19:09:07.869Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T19:09:07.870Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T19:09:07.870Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T19:09:07.871Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[debug] [2026-01-09T19:09:07.873Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T19:09:07.875Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T19:09:07.875Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T19:09:07.878Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects//services/firebaseappdistribution.googleapis.com 400
+[debug] [2026-01-09T19:09:07.878Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects//services/firebaseappdistribution.googleapis.com [omitted]
+[debug] [2026-01-09T19:09:07.893Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T19:09:07.904Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T19:09:07.910Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T19:09:07.911Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T19:09:07.912Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T19:09:07.912Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T19:09:07.912Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[debug] [2026-01-09T19:09:07.913Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T19:09:07.913Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T19:09:07.914Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T19:09:07.933Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T19:09:07.934Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T19:09:07.935Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T19:09:07.935Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T19:09:07.935Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[debug] [2026-01-09T19:09:07.936Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T19:09:07.936Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T19:09:07.936Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T19:22:20.867Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T19:22:20.877Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T19:22:20.879Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T19:22:20.880Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T19:22:20.882Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T19:22:20.882Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T19:22:20.883Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[debug] [2026-01-09T19:22:20.916Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T19:22:20.916Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T19:22:20.917Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[debug] [2026-01-09T19:22:21.233Z] Checked if tokens are valid: true, expires at: 1767989345854
+[debug] [2026-01-09T19:22:21.233Z] Checked if tokens are valid: true, expires at: 1767989345854
+[debug] [2026-01-09T19:22:21.235Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects//services/firebaseappdistribution.googleapis.com [none]
+[debug] [2026-01-09T19:22:21.235Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects//services/firebaseappdistribution.googleapis.com x-goog-quota-user=projects/
+[debug] [2026-01-09T19:22:21.254Z] Checked if tokens are valid: true, expires at: 1767989345854
+[debug] [2026-01-09T19:22:21.254Z] Checked if tokens are valid: true, expires at: 1767989345854
+[debug] [2026-01-09T19:22:21.255Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects//services/firebaseappdistribution.googleapis.com [none]
+[debug] [2026-01-09T19:22:21.255Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects//services/firebaseappdistribution.googleapis.com x-goog-quota-user=projects/
+[debug] [2026-01-09T19:22:22.224Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects//services/firebaseappdistribution.googleapis.com 400
+[debug] [2026-01-09T19:22:22.232Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects//services/firebaseappdistribution.googleapis.com [omitted]
+[debug] [2026-01-09T19:22:22.234Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T19:22:22.246Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T19:22:22.250Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T19:22:22.251Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T19:22:22.251Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T19:22:22.251Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[debug] [2026-01-09T19:22:22.252Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T19:22:22.253Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T19:22:22.253Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T19:22:22.260Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T19:22:22.265Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T19:22:22.269Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T19:22:22.270Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T19:22:22.271Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T19:22:22.271Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T19:22:22.272Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[debug] [2026-01-09T19:22:22.272Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T19:22:22.273Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T19:22:22.275Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T19:22:22.289Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects//services/firebaseappdistribution.googleapis.com 400
+[debug] [2026-01-09T19:22:22.289Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects//services/firebaseappdistribution.googleapis.com [omitted]
+[debug] [2026-01-09T19:22:22.294Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T19:22:22.295Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T19:22:22.295Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T19:22:22.296Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T19:22:22.296Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[debug] [2026-01-09T19:22:22.299Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T19:22:22.300Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T19:22:22.300Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T19:22:24.953Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T19:22:24.954Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T19:22:24.961Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T19:22:24.962Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T19:22:24.964Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T19:22:24.964Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T19:22:24.964Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[debug] [2026-01-09T19:22:24.965Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T19:22:24.966Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T19:22:24.966Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T19:22:24.967Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T19:22:24.968Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T19:22:24.968Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T19:22:24.968Z] > authorizing via signed-in user (sinurai535@gmail.com)
+[debug] [2026-01-09T19:22:24.969Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[debug] [2026-01-09T19:22:24.969Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2026-01-09T19:22:24.969Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2026-01-09T19:22:24.969Z] > authorizing via signed-in user (sinurai535@gmail.com)
