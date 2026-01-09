@@ -10,8 +10,10 @@ import 'firebase_options.dart';
 // ✅ YOUR BRAIN IMPORT
 import 'ai_logic.dart';
 
-// ✅ VOICE IMPORT (Pubspec me 'speech_to_text' hona chahiye)
+// ✅ ALL NECESSARY IMPORTS (Voice, Sound, Copy)
 import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:flutter_tts/flutter_tts.dart';
+import 'package:flutter/services.dart';
 
 // --- APP ENTRY POINT ---
 
@@ -35,7 +37,6 @@ class CodeNetraApp extends StatelessWidget {
         canvasColor: Colors.black,
         primaryColor: const Color(0xFFCCFF00),
         iconTheme: const IconThemeData(color: Colors.white),
-        // ✅ Font: Inter (Professional)
         textTheme: GoogleFonts.interTextTheme(
           Theme.of(context).textTheme,
         ).apply(bodyColor: Colors.white, displayColor: Colors.white),
@@ -47,7 +48,7 @@ class CodeNetraApp extends StatelessWidget {
 }
 
 // =============================================================================
-// 1. SPLASH SCREEN (✅ FIX: Scrollable to prevent overflow)
+// 1. SPLASH SCREEN
 // =============================================================================
 class SplashView extends StatefulWidget {
   const SplashView({super.key});
@@ -111,7 +112,6 @@ class _SplashViewState extends State<SplashView> with TickerProviderStateMixin {
     return Scaffold(
       backgroundColor: Colors.black,
       body: Center(
-        // ✅ FIX: Added SingleChildScrollView to avoid RenderFlex overflow
         child: SingleChildScrollView(
           child: AnimatedBuilder(
             animation: _controller,
@@ -207,7 +207,7 @@ class _MainLayoutState extends State<MainLayout> {
   Widget build(BuildContext context) {
     final List<Widget> screens = [
       HomeScreen(onNavigate: _changeScreen),
-      const ChatScreen(), // ✅ Updated Chat Screen Here
+      const ChatScreen(),
       const TemplatesScreen(),
       const PDFScreen(),
       const ImageGenScreen(),
@@ -467,7 +467,7 @@ class HomeScreen extends StatelessWidget {
 }
 
 // =============================================================================
-// 4. CHAT SCREEN (✅ FINAL FIXED VERSION: Scroll, Mic, Fonts, Bubbles)
+// 4. CHAT SCREEN (🔥 FINAL FIXED: TTS Completion & Fast Mic Typing)
 // =============================================================================
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -480,147 +480,127 @@ class _ChatScreenState extends State<ChatScreen> {
   final ScrollController _scrollController = ScrollController();
   final AIBrain _aiBrain = AIBrain();
 
-  // 🎤 Voice Variables
+  // 🎤 Voice & TTS
   late stt.SpeechToText _speech;
+  late FlutterTts _flutterTts;
   bool _isListening = false;
-  String _lastWords = '';
+  String _liveVoiceText = "Start Speaking..."; // Overlay Text
 
-  // 🔒 Logic Variables
+  // 🔒 Logic
   final List<Map<String, dynamic>> _messages = [];
   bool _isTyping = false;
-  bool _hasText = false; // Send vs Mic logic
+  bool _hasText = false;
 
   @override
   void initState() {
     super.initState();
     _aiBrain.initBrain();
-    _speech = stt.SpeechToText(); // Voice init
-    _controller.addListener(() {
-      setState(() {
-        _hasText = _controller.text.trim().isNotEmpty;
-      });
-    });
-  }
+    _speech = stt.SpeechToText();
+    _flutterTts = FlutterTts();
 
-  // ✅ Scroll Function
-  void _scrollToBottom() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scrollController.hasClients) {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
+    // ✅ FIX: Configure TTS to wait for completion
+    _initTTS();
+
+    _controller.addListener(() {
+      if (mounted) {
+        setState(() {
+          _hasText = _controller.text.trim().isNotEmpty;
+        });
       }
     });
   }
 
-  // ➕ ATTACHMENT MENU (Plus Icon Click)
-  void _showAttachmentMenu() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: const Color(0xFF1E1E1E),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
-      ),
-      builder: (context) {
-        return Container(
-          padding: const EdgeInsets.all(20),
-          height: 250,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text("Add to chat",
-                  style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18)),
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _attachBtn(Icons.camera_alt, "Camera", Colors.pink),
-                  _attachBtn(Icons.image, "Gallery", Colors.purple),
-                  _attachBtn(Icons.insert_drive_file, "File", Colors.blue),
-                  _attachBtn(Icons.add_to_drive, "Drive", Colors.green),
-                ],
-              ),
-            ],
-          ),
-        );
-      },
+  void _initTTS() async {
+    await _flutterTts.setSharedInstance(true);
+    await _flutterTts.setIosAudioCategory(IosTextToSpeechAudioCategory.playback,
+        [IosTextToSpeechAudioCategoryOptions.defaultToSpeaker]);
+    await _flutterTts.awaitSpeakCompletion(true); // ✅ Important Fix
+    await _flutterTts.setSpeechRate(0.5);
+    await _flutterTts.setPitch(1.0);
+  }
+
+  // 🔊 SMART TEXT TO SPEECH
+  void _speak(String text) async {
+    await _flutterTts.stop(); // Stop previous
+    // Language detection logic
+    bool isHindi = text.codeUnits.any((c) => c >= 0x0900 && c <= 0x097F);
+    if (isHindi) {
+      await _flutterTts.setLanguage("hi-IN");
+    } else {
+      await _flutterTts.setLanguage("en-US");
+    }
+    await _flutterTts.speak(text);
+  }
+
+  // 📋 COPY TEXT
+  void _copyText(String text) {
+    Clipboard.setData(ClipboardData(text: text));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+          content: Text("Copied! ✅"), duration: Duration(seconds: 1)),
     );
   }
 
-  Widget _attachBtn(IconData icon, String label, Color color) {
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(15),
-          decoration: BoxDecoration(
-            color: const Color(0xFF333333),
-            shape: BoxShape.circle,
-            border: Border.all(color: Colors.white10),
-          ),
-          child: Icon(icon, color: color, size: 28),
-        ),
-        const SizedBox(height: 8),
-        Text(label,
-            style: GoogleFonts.inter(color: Colors.white70, fontSize: 12)),
-      ],
-    );
-  }
-
-  // 🎤 VOICE FUNCTION - "Listening" Overlay ke sath
+  // 🎤 SMART MIC FUNCTION
   void _listen() async {
     if (!_isListening) {
       bool available = await _speech.initialize(
         onStatus: (status) {
           if (status == 'notListening' || status == 'done') {
-            setState(() => _isListening = false);
-            if (Navigator.canPop(context))
-              Navigator.pop(context); // Close Overlay
+            _stopListening();
           }
         },
-        onError: (errorNotification) {
-          setState(() => _isListening = false);
-          if (Navigator.canPop(context))
-            Navigator.pop(context); // Close Overlay
-        },
+        onError: (e) => _stopListening(),
       );
 
       if (available) {
-        setState(() => _isListening = true);
-        // Show Overlay
+        setState(() {
+          _isListening = true;
+          _liveVoiceText = "Speak now...";
+        });
+
+        // 🟢 SHOW OVERLAY
         showDialog(
           context: context,
-          barrierDismissible: false,
-          builder: (context) => const ListeningOverlay(),
-        );
+          barrierDismissible: true,
+          barrierColor: Colors.black,
+          builder: (context) => ListeningOverlay(liveText: _liveVoiceText),
+        ).then((_) => _stopListening());
 
+        // ✅ FIX: Fast Typing
         _speech.listen(
           onResult: (val) {
             setState(() {
-              _lastWords = val.recognizedWords;
-              _controller.text = _lastWords;
+              _controller.text = val.recognizedWords;
+              _liveVoiceText = val.recognizedWords; // Show text on Overlay
+              _hasText = true;
               _controller.selection = TextSelection.fromPosition(
                   TextPosition(offset: _controller.text.length));
-              _hasText = true;
             });
           },
+          listenFor: const Duration(seconds: 60),
+          pauseFor: const Duration(seconds: 3),
+          partialResults: true, // ✅ Immediate typing
+          cancelOnError: true,
+          listenMode: stt.ListenMode.dictation,
         );
       }
-    } else {
-      setState(() => _isListening = false);
+    }
+  }
+
+  void _stopListening() {
+    if (_isListening) {
       _speech.stop();
+      if (mounted) setState(() => _isListening = false);
       if (Navigator.canPop(context)) Navigator.pop(context);
     }
   }
 
   void _sendMessage() async {
     if (_controller.text.trim().isEmpty || _isTyping) return;
-
     String userText = _controller.text.trim();
+
+    await _flutterTts.stop(); // Stop speaking
 
     setState(() {
       _messages.add({"role": "user", "text": userText, "isAnimated": true});
@@ -638,7 +618,7 @@ class _ChatScreenState extends State<ChatScreen> {
         _isTyping = false;
         _messages.add({
           "role": "ai",
-          "text": aiResponse ?? "I am unable to connect right now.",
+          "text": aiResponse ?? "Error.",
           "isAnimated": false
         });
       });
@@ -646,13 +626,17 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(_scrollController.position.maxScrollExtent,
+            duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
+      }
+    });
+  }
+
   void _onAnimationComplete(int index) {
-    // Rebuild safely properly
-    if (mounted) {
-      setState(() {
-        _messages[index]['isAnimated'] = true;
-      });
-    }
+    if (mounted) setState(() => _messages[index]['isAnimated'] = true);
   }
 
   @override
@@ -661,29 +645,22 @@ class _ChatScreenState extends State<ChatScreen> {
       color: Colors.black,
       child: Column(
         children: [
-          // --- CHAT LIST ---
+          const SizedBox(height: 20),
+
           Expanded(
             child: _messages.isEmpty
                 ? Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        SizedBox(
-                          height: 150,
-                          width: 150,
-                          child: Image.asset("assets/orb.gif",
-                              fit: BoxFit.contain),
-                        ),
-                        const SizedBox(height: 20),
-                        Text(
-                          "CodeNetra Online",
-                          style: GoogleFonts.inter(
-                            color: const Color(0xFFCCFF00),
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 1.0,
-                          ),
-                        ),
+                        const Icon(Icons.auto_awesome,
+                            size: 40, color: Color(0xFF222222)),
+                        const SizedBox(height: 15),
+                        Text("CodeNetra AI",
+                            style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold)),
                       ],
                     ),
                   )
@@ -698,33 +675,23 @@ class _ChatScreenState extends State<ChatScreen> {
                           padding: const EdgeInsets.only(left: 10, bottom: 20),
                           child: Row(
                             children: [
-                              const SizedBox(
-                                height: 24,
-                                width: 24,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Color(0xFFCCFF00),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Text(
-                                "CodeNetra is thinking...",
-                                style: GoogleFonts.inter(
-                                    color: Colors.grey[400],
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500),
-                              ),
+                              SizedBox(
+                                  height: 25,
+                                  width: 25,
+                                  child: Image.asset("assets/orb.gif")),
+                              const SizedBox(width: 10),
+                              Text("Thinking...",
+                                  style: GoogleFonts.inter(
+                                      color: Colors.grey,
+                                      fontWeight: FontWeight.bold)),
                             ],
                           ),
                         );
                       }
-
                       final msg = _messages[index];
-                      final isUser = msg['role'] == "user";
-
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 25),
-                        child: isUser
+                        child: msg['role'] == "user"
                             ? _buildUserMessage(msg['text'])
                             : _buildAIMessage(
                                 msg['text'], !msg['isAnimated'], index),
@@ -733,83 +700,64 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
           ),
 
-          // --- INPUT BAR ---
+          // INPUT BAR
           Container(
             padding: const EdgeInsets.fromLTRB(10, 10, 15, 20),
-            decoration: const BoxDecoration(
-              color: Colors.black,
-              border: Border(top: BorderSide(color: Colors.white12)),
-            ),
+            decoration: const BoxDecoration(color: Colors.black),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                // ➕ PLUS ICON
                 GestureDetector(
                   onTap: _showAttachmentMenu,
                   child: Container(
                     margin: const EdgeInsets.only(bottom: 8, right: 5),
                     padding: const EdgeInsets.all(10),
                     decoration: const BoxDecoration(
-                      color: Color(0xFF1E1E1E),
-                      shape: BoxShape.circle,
-                    ),
+                        color: Color(0xFF1E1E1E), shape: BoxShape.circle),
                     child: const Icon(Icons.add, color: Colors.grey, size: 24),
                   ),
                 ),
-
-                // 📝 INPUT FIELD
                 Expanded(
                   child: Container(
                     padding:
                         const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF1E1E1E),
-                      borderRadius: BorderRadius.circular(28),
-                      border: Border.all(color: Colors.white10),
-                    ),
+                        color: const Color(0xFF1E1E1E),
+                        borderRadius: BorderRadius.circular(28),
+                        border: Border.all(color: Colors.white10)),
                     child: TextField(
                       controller: _controller,
                       minLines: 1,
                       maxLines: 5,
-                      style: GoogleFonts.inter(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500),
+                      style:
+                          GoogleFonts.inter(color: Colors.white, fontSize: 16),
                       decoration: const InputDecoration(
-                        hintText: "Ask anything...",
-                        hintStyle: TextStyle(color: Colors.grey),
-                        border: InputBorder.none,
-                      ),
+                          hintText: "Message CodeNetra",
+                          hintStyle: TextStyle(color: Colors.grey),
+                          border: InputBorder.none),
                     ),
                   ),
                 ),
                 const SizedBox(width: 10),
-
-                // 🎤 MIC OR SEND TOGGLE
                 GestureDetector(
                   onTap: _hasText ? (_isTyping ? null : _sendMessage) : _listen,
                   child: Container(
                     margin: const EdgeInsets.only(bottom: 5),
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: _hasText
-                          ? const Color(0xFFCCFF00)
-                          : const Color(0xFF1E1E1E),
-                      shape: BoxShape.circle,
-                    ),
+                        color: _hasText
+                            ? const Color(0xFFCCFF00)
+                            : const Color(0xFF1E1E1E),
+                        shape: BoxShape.circle),
                     child: _isTyping
                         ? const SizedBox(
                             height: 24,
                             width: 24,
                             child: CircularProgressIndicator(
                                 color: Colors.black, strokeWidth: 2))
-                        : Icon(
-                            _hasText
-                                ? Icons.arrow_upward
-                                : (_isListening ? Icons.mic_off : Icons.mic),
+                        : Icon(_hasText ? Icons.arrow_upward : Icons.mic,
                             color: _hasText ? Colors.black : Colors.white,
-                            size: 24,
-                          ),
+                            size: 24),
                   ),
                 ),
               ],
@@ -820,70 +768,153 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  // 🟢 USER MESSAGE BUBBLE (Small & Rounded)
+  void _showAttachmentMenu() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1E1E1E),
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(25))),
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(20),
+          height: 250,
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text("Add to chat",
+                style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18)),
+            const SizedBox(height: 20),
+            Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
+              _attachBtn(Icons.camera_alt, "Camera", Colors.pink),
+              _attachBtn(Icons.image, "Gallery", Colors.purple),
+              _attachBtn(Icons.insert_drive_file, "File", Colors.blue),
+              _attachBtn(Icons.add_to_drive, "Drive", Colors.green),
+            ]),
+          ]),
+        );
+      },
+    );
+  }
+
+  Widget _attachBtn(IconData icon, String label, Color color) {
+    return Column(children: [
+      Container(
+          padding: const EdgeInsets.all(15),
+          decoration: BoxDecoration(
+              color: const Color(0xFF333333),
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white10)),
+          child: Icon(icon, color: color, size: 28)),
+      const SizedBox(height: 8),
+      Text(label, style: GoogleFonts.inter(color: Colors.white70, fontSize: 12))
+    ]);
+  }
+
   Widget _buildUserMessage(String text) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        Flexible(
+    return Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+      ConstrainedBox(
+          constraints:
+              BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.8),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-            decoration: const BoxDecoration(
-              color: Color(0xFF1F1F1F),
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(20),
-                topRight: Radius.circular(20),
-                bottomLeft: Radius.circular(20),
-                bottomRight: Radius.circular(5),
-              ),
-            ),
-            child: Text(
-              text,
-              style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  height: 1.4),
-            ),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+              decoration: const BoxDecoration(
+                  color: Color(0xFF1F1F1F),
+                  borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(20),
+                      topRight: Radius.circular(20),
+                      bottomLeft: Radius.circular(20),
+                      bottomRight: Radius.circular(5))),
+              child: Text(text,
+                  style: GoogleFonts.inter(color: Colors.white, fontSize: 16))))
+    ]);
+  }
+
+  Widget _buildAIMessage(String text, bool shouldAnimate, int index) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+            margin: const EdgeInsets.only(top: 0),
+            child: Image.asset("assets/orb.gif", height: 30, width: 30)),
+        const SizedBox(width: 15),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              shouldAnimate
+                  ? TypingTextEffect(
+                      text: text, onFinished: () => _onAnimationComplete(index))
+                  : SelectableText(text,
+                      style: GoogleFonts.inter(
+                          color: Colors.white, fontSize: 16, height: 1.5)),
+              if (!shouldAnimate)
+                Padding(
+                  padding: const EdgeInsets.only(top: 15.0),
+                  child: Row(
+                    children: [
+                      // BIG BUTTONS
+                      _actionBtn(Icons.volume_up, () => _speak(text)),
+                      const SizedBox(width: 25),
+                      _actionBtn(Icons.content_copy, () => _copyText(text)),
+                    ],
+                  ),
+                ),
+            ],
           ),
         ),
       ],
     );
   }
 
-  // 🤖 AI MESSAGE
-  Widget _buildAIMessage(String text, bool shouldAnimate, int index) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: shouldAnimate
-              ? TypingTextEffect(
-                  text: text,
-                  onFinished: () => _onAnimationComplete(index),
-                )
-              : SelectableText(
-                  text,
-                  style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    height: 1.6,
-                  ),
-                ),
-        ),
-      ],
+  Widget _actionBtn(IconData icon, VoidCallback onTap) {
+    return GestureDetector(
+        onTap: onTap,
+        child: Container(
+            padding: const EdgeInsets.all(5),
+            color: Colors.transparent,
+            child: Icon(icon, color: Colors.grey, size: 26)));
+  }
+}
+
+// 🔥 LISTENING OVERLAY (SHOWS TEXT)
+class ListeningOverlay extends StatelessWidget {
+  final String liveText;
+  const ListeningOverlay({super.key, required this.liveText});
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+              height: 350,
+              width: 350,
+              child: Image.asset("assets/orb.gif", fit: BoxFit.contain)),
+          const SizedBox(height: 20),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Text(liveText,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                    color: const Color(0xFFCCFF00),
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                    decoration: TextDecoration.none)),
+          ),
+        ],
+      ),
     );
   }
 }
 
-// 🔥 TYPING EFFECT (Scroll Fix)
+// ... TypingTextEffect class (Same as before) ...
 class TypingTextEffect extends StatefulWidget {
   final String text;
   final VoidCallback onFinished;
   const TypingTextEffect(
       {super.key, required this.text, required this.onFinished});
-
   @override
   State<TypingTextEffect> createState() => _TypingTextEffectState();
 }
@@ -892,22 +923,12 @@ class _TypingTextEffectState extends State<TypingTextEffect> {
   String displayedText = "";
   int _charIndex = 0;
   Timer? _timer;
-
   @override
   void initState() {
     super.initState();
-    _startTyping();
-  }
-
-  void _startTyping() {
-    _timer = Timer.periodic(const Duration(milliseconds: 20), (timer) {
+    _timer = Timer.periodic(const Duration(milliseconds: 10), (timer) {
       if (_charIndex < widget.text.length) {
-        if (mounted) {
-          setState(() {
-            displayedText += widget.text[_charIndex];
-            _charIndex++;
-          });
-        }
+        if (mounted) setState(() => displayedText += widget.text[_charIndex++]);
       } else {
         timer.cancel();
         widget.onFinished();
@@ -923,103 +944,9 @@ class _TypingTextEffectState extends State<TypingTextEffect> {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      displayedText,
-      style: GoogleFonts.inter(
-        color: Colors.white,
-        fontSize: 16,
-        fontWeight: FontWeight.w500,
-        height: 1.6,
-      ),
-    );
-  }
-}
-
-// 🎤 LISTENING OVERLAY WIDGET
-class ListeningOverlay extends StatelessWidget {
-  const ListeningOverlay({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Dialog(
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          SizedBox(
-            height: 120,
-            width: 120,
-            child: Image.asset("assets/orb.gif", fit: BoxFit.contain),
-          ),
-          const SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                "Listening",
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const ListeningDots(),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// 💥 ANIMATED DOTS
-class ListeningDots extends StatefulWidget {
-  const ListeningDots({super.key});
-
-  @override
-  State<ListeningDots> createState() => _ListeningDotsState();
-}
-
-class _ListeningDotsState extends State<ListeningDots>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  int _dotCount = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1500),
-    )..repeat();
-
-    _controller.addListener(() {
-      final newCount = (_controller.value * 4).floor();
-      if (_dotCount != newCount) {
-        setState(() {
-          _dotCount = newCount;
-        });
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      '.' * _dotCount,
-      style: GoogleFonts.inter(
-        color: Colors.white,
-        fontSize: 20,
-        fontWeight: FontWeight.w600,
-      ),
-    );
+    return Text(displayedText,
+        style:
+            GoogleFonts.inter(color: Colors.white, fontSize: 16, height: 1.5));
   }
 }
 
