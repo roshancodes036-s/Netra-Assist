@@ -3,7 +3,7 @@ import 'dart:io';
 import 'dart:ui';
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show kIsWeb; // ✅ Web Fix
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/services.dart';
 
@@ -181,10 +181,10 @@ class _MainLayoutState extends State<MainLayout> {
   Widget build(BuildContext context) {
     final List<Widget> screens = [
       HomeScreen(onNavigate: _changeScreen, isDevMode: _isDevMode), // 0
-      const RepoChatScreen(), // 1 (UPDATED TO ULTRA VERSION)
+      const RepoChatScreen(), // 1
       const TemplatesScreen(), // 2
       const ErrorFixerScreen(), // 3
-      const UIToCodeScreen(), // 4
+      const UIToCodeScreen(), // 4 (UPDATED & WORKING)
       const PDFScreen(), // 5
       const VoiceScreen(), // 6
       const UpgradeScreen(), // 7
@@ -859,7 +859,7 @@ class _RepoChatScreenState extends State<RepoChatScreen>
 }
 
 // =============================================================================
-// 🔥 5. UI TO CODE SCREEN
+// 🔥 5. UI TO CODE SCREEN (TEACHER EDITION + NEON UI)
 // =============================================================================
 
 class UIToCodeScreen extends StatefulWidget {
@@ -871,8 +871,9 @@ class UIToCodeScreen extends StatefulWidget {
 class _UIToCodeScreenState extends State<UIToCodeScreen> {
   File? _image;
   bool _loading = false;
-  String _generatedCode = "// Generated code will appear here...";
+  String _generatedCode = "";
   final AIBrain _brain = AIBrain();
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -880,66 +881,197 @@ class _UIToCodeScreenState extends State<UIToCodeScreen> {
     _brain.initBrain();
   }
 
-  Future<void> _pickImage() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+  // --- 📸 PICK IMAGE ---
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(source: source);
 
-    if (pickedFile != null) {
-      setState(() {
-        _image = File(pickedFile.path);
-        _loading = true;
-      });
-      // Call AI
-      String? result = await _brain.askWithImage(
-          "Analyze this UI image and write the Flutter code for it. Return ONLY the code.",
-          _image!);
-      setState(() {
-        _generatedCode = result ?? "// AI Error";
-        _loading = false;
-      });
+      if (pickedFile != null) {
+        setState(() { 
+          _image = File(pickedFile.path); 
+          _generatedCode = ""; // Purana code hatayein
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
     }
+  }
+
+  // --- ⚡ GENERATE CODE (TEACHER PROMPT) ---
+  Future<void> _generateCode() async {
+    if (_image == null) return;
+
+    setState(() { _loading = true; _generatedCode = ""; });
+
+    // 🔥 TEACHER PROMPT: Explains File Name, Code, and Connection
+    String prompt = """
+    You are an expert Flutter Instructor helping a beginner.
+    Look at this UI screenshot and write the Flutter code to recreate it.
+
+    INSTRUCTIONS FOR OUTPUT:
+    1. **Step 1: File Creation:** Tell the user exactly what to name this file (e.g., 'Create a new file named lib/login_screen.dart').
+    2. **Step 2: The Code:** Provide the full, runnable Flutter code (import material.dart, create a Stateless/Stateful widget).
+       - Use 'GoogleFonts.outfit' for modern styling.
+       - Use Colors: Background(0xFF0A0A0A) (Black), Accent(0xFFCCFF00) (Neon Green).
+       - Make it responsive.
+    3. **Step 3: How to Connect:** Explain simply how to call this page from main.dart (e.g., 'Add LoginScreen() to your home property').
+    
+    Do not write long theories. Keep it structured: Step 1 -> Step 2 (Code) -> Step 3.
+    """;
+
+    String? result = await _brain.askWithImage(prompt, _image!);
+
+    setState(() {
+      _loading = false;
+      // Remove markdown markers for clean display
+      _generatedCode = result?.replaceAll("```dart", "").replaceAll("```", "") ?? "// Error generating code";
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return ProPageLayout(
-      title: "UI to Code",
+      title: "UI to Code", 
       icon: Icons.image_aspect_ratio_rounded,
       child: Column(
         children: [
+          // 1. IMAGE PREVIEW AREA
           Expanded(
-            flex: 1,
-            child: ProCard(
-              onTap: _pickImage,
+            flex: 2,
+            child: Container(
+              width: double.infinity,
+              margin: const EdgeInsets.symmetric(horizontal: 10),
+              decoration: BoxDecoration(
+                color: AppColors.cardSurface,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: _image != null ? AppColors.primaryAccent : AppColors.borderSubtle),
+              ),
               child: _image == null
                   ? Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                          const Icon(Icons.cloud_upload_rounded,
-                              size: 50, color: AppColors.primaryAccent),
-                          const SizedBox(height: 10),
-                          const Text("Upload UI Screenshot")
-                        ])
-                  : ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: Image.file(_image!,
-                          fit: BoxFit.cover, width: double.infinity)),
+                        const Icon(Icons.cloud_upload_rounded, size: 60, color: Colors.grey),
+                        const SizedBox(height: 10),
+                        Text("Upload UI Screenshot", style: GoogleFonts.outfit(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 5),
+                        Text("I will turn it into Flutter Code", style: TextStyle(color: Colors.grey, fontSize: 12)),
+                        const SizedBox(height: 20),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            _actionBtn("Camera", Icons.camera_alt, () => _pickImage(ImageSource.camera)),
+                            const SizedBox(width: 15),
+                            _actionBtn("Gallery", Icons.photo_library, () => _pickImage(ImageSource.gallery)),
+                          ],
+                        )
+                      ],
+                    )
+                  : Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        ClipRRect(borderRadius: BorderRadius.circular(18), child: Image.file(_image!, fit: BoxFit.contain)),
+                        Positioned(
+                          top: 10, right: 10,
+                          child: IconButton(
+                            onPressed: () => setState(() => _image = null),
+                            style: IconButton.styleFrom(backgroundColor: Colors.red),
+                            icon: const Icon(Icons.close, color: Colors.white),
+                          ),
+                        )
+                      ],
+                    ),
             ),
           ),
-          const SizedBox(height: 16),
-          if (_loading)
-            const LinearProgressIndicator(color: AppColors.primaryAccent),
-          Expanded(
-            flex: 2,
-            child: ProCard(
-              child: SingleChildScrollView(
-                child: Text(_generatedCode,
-                    style: GoogleFonts.firaCode(
-                        fontSize: 12, color: AppColors.textSecondary)),
+
+          const SizedBox(height: 15),
+
+          // 2. GENERATE BUTTON
+          if (_image != null && !_loading && _generatedCode.isEmpty)
+            SizedBox(
+              width: 220,
+              child: ElevatedButton.icon(
+                onPressed: _generateCode,
+                icon: const Icon(Icons.auto_fix_high, color: Colors.black),
+                label: Text("GENERATE CODE", style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryAccent,
+                  foregroundColor: Colors.black,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30))
+                ),
               ),
             ),
-          ),
+
+          if (_loading)
+            Column(
+              children: [
+                const CircularProgressIndicator(color: AppColors.primaryAccent),
+                const SizedBox(height: 10),
+                Text("Analyzing Pixels... Writing Code...", style: GoogleFonts.outfit(color: AppColors.primaryAccent))
+              ],
+            ),
+
+          const SizedBox(height: 15),
+
+          // 3. CODE OUTPUT (NEON TERMINAL STYLE)
+          if (_generatedCode.isNotEmpty)
+            Expanded(
+              flex: 3,
+              child: Container(
+                width: double.infinity,
+                margin: const EdgeInsets.symmetric(horizontal: 10),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.black,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.grey.shade800),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text("TEACHER'S CODE", style: GoogleFonts.firaCode(color: Colors.greenAccent, fontWeight: FontWeight.bold)),
+                        InkWell(
+                          onTap: () {
+                            Clipboard.setData(ClipboardData(text: _generatedCode));
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Code Copied! 🚀")));
+                          },
+                          child: const Row(children: [Icon(Icons.copy, color: Colors.white, size: 16), SizedBox(width: 5), Text("COPY", style: TextStyle(color: Colors.white))]),
+                        )
+                      ],
+                    ),
+                    const Divider(color: Colors.grey),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        controller: _scrollController,
+                        child: Text(
+                          _generatedCode,
+                          style: GoogleFonts.firaCode(color: const Color(0xFFCCFF00), fontSize: 12), // Neon Green Code
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
         ],
+      ),
+    );
+  }
+
+  Widget _actionBtn(String label, IconData icon, VoidCallback onTap) {
+    return ElevatedButton.icon(
+      onPressed: onTap,
+      icon: Icon(icon, size: 18),
+      label: Text(label),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: AppColors.cardSurface,
+        foregroundColor: Colors.white,
+        side: const BorderSide(color: AppColors.primaryAccent),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))
       ),
     );
   }
