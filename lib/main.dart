@@ -3,12 +3,22 @@ import 'dart:io';
 import 'dart:ui';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb; // ✅ Added for Web Fix
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/services.dart';
 
 // ✅ FIREBASE
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+
+// ✅ PACKAGES
+import 'package:file_picker/file_picker.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:archive/archive.dart';
+import 'package:archive/archive_io.dart';
+import 'package:flutter_tts/flutter_tts.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:permission_handler/permission_handler.dart';
 
 // ✅ BRAIN
 import 'ai_logic.dart';
@@ -17,7 +27,7 @@ import 'ai_logic.dart';
 // ✨ PROFESSIONAL THEME COLORS
 // =============================================================================
 class AppColors {
-  static const Color primaryAccent = Color(0xFFCCFF00); // Neon Green Highlight
+  static const Color primaryAccent = Color(0xFFCCFF00); // Neon Green
   static const Color backgroundDark = Color(0xFF0A0A0A); // Deepest Black
   static const Color cardSurface = Color(0xFF1C1C1C); // Premium Grey Card
   static const Color textPrimary = Colors.white;
@@ -35,10 +45,9 @@ void main() async {
     await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform);
   } catch (e) {
-    // debugPrint("Firebase Error: $e");
+    debugPrint("Firebase Error (Ignored for UI): $e");
   }
 
-  // Set Status Bar to Dark
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
     statusBarIconBrightness: Brightness.light,
@@ -62,7 +71,6 @@ class CodeNetraApp extends StatelessWidget {
         primaryColor: AppColors.primaryAccent,
         canvasColor: AppColors.backgroundDark,
         useMaterial3: true,
-        // Professional Typography using Inter font
         textTheme:
             GoogleFonts.interTextTheme(Theme.of(context).textTheme).apply(
           bodyColor: AppColors.textPrimary,
@@ -83,7 +91,7 @@ class CodeNetraApp extends StatelessWidget {
 }
 
 // =============================================================================
-// 1. PROFESSIONAL SPLASH SCREEN (Cleaner Animation)
+// 1. SPLASH SCREEN
 // =============================================================================
 
 class SplashView extends StatefulWidget {
@@ -118,7 +126,6 @@ class _SplashViewState extends State<SplashView> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Subtle glowing logo
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
@@ -148,7 +155,7 @@ class _SplashViewState extends State<SplashView> {
 }
 
 // =============================================================================
-// 2. MAIN LAYOUT (Clean Structure)
+// 2. MAIN LAYOUT
 // =============================================================================
 
 class MainLayout extends StatefulWidget {
@@ -172,9 +179,10 @@ class _MainLayoutState extends State<MainLayout> {
 
   @override
   Widget build(BuildContext context) {
+    // ✅ REAL WORKING SCREENS LIST
     final List<Widget> screens = [
       HomeScreen(onNavigate: _changeScreen, isDevMode: _isDevMode), // 0
-      const RepoChatScreen(), // 1
+      const RepoChatScreen(), // 1 (SUPERCHARGED ZIP CHAT)
       const TemplatesScreen(), // 2
       const ErrorFixerScreen(), // 3
       const UIToCodeScreen(), // 4
@@ -197,14 +205,6 @@ class _MainLayoutState extends State<MainLayout> {
             onPressed: () => Scaffold.of(context).openDrawer(),
           );
         }),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_none_rounded,
-                color: AppColors.textSecondary),
-            onPressed: () {},
-          ),
-          const SizedBox(width: 10),
-        ],
       ),
       drawer: Drawer(
         child: SidebarContent(
@@ -228,7 +228,6 @@ class _MainLayoutState extends State<MainLayout> {
                     onModeChange: _toggleMode,
                     onTap: _changeScreen)),
           Expanded(
-            // Using a subtle fade transition for screen changes
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
               child:
@@ -265,8 +264,7 @@ class _MainLayoutState extends State<MainLayout> {
   }
 }
 
-// --- PROFESSIONAL SIDEBAR ---
-
+// --- SIDEBAR ---
 class SidebarContent extends StatelessWidget {
   final int selectedIndex;
   final Function(int) onTap;
@@ -288,7 +286,6 @@ class SidebarContent extends StatelessWidget {
       child: Column(
         children: [
           const SizedBox(height: 50),
-          // Branding
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -300,9 +297,7 @@ class SidebarContent extends StatelessWidget {
                       fontSize: 22, fontWeight: FontWeight.w800)),
             ],
           ),
-
           const SizedBox(height: 30),
-          // Professional Toggle Switch
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 20),
             padding: const EdgeInsets.all(4),
@@ -319,7 +314,6 @@ class SidebarContent extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 30),
-
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -333,7 +327,6 @@ class SidebarContent extends StatelessWidget {
                     _btn("UI to Code", Icons.image_aspect_ratio_rounded, 4),
                     _btn("Error Debugger", Icons.bug_report_rounded, 3),
                     _btn("Code Expert", Icons.terminal_rounded, 9),
-                    _btn("Documentation", Icons.description_rounded, 2),
                   ] else ...[
                     _btn("Live Vision", Icons.camera_enhance_rounded, 8),
                     _btn("Voice Assistant", Icons.graphic_eq_rounded, 6),
@@ -344,53 +337,7 @@ class SidebarContent extends StatelessWidget {
               ),
             ),
           ),
-
-          // Professional Upgrade Banner
-          Container(
-            margin: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-                gradient: LinearGradient(colors: [
-                  AppColors.primaryAccent.withOpacity(0.1),
-                  AppColors.cardSurface
-                ]),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                    color: AppColors.primaryAccent.withOpacity(0.3))),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: () => onTap(7),
-                borderRadius: BorderRadius.circular(16),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    children: [
-                      Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: const BoxDecoration(
-                              color: AppColors.primaryAccent,
-                              shape: BoxShape.circle),
-                          child: const Icon(Icons.bolt_rounded,
-                              color: Colors.black, size: 20)),
-                      const SizedBox(width: 12),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text("Upgrade to Pro",
-                              style: GoogleFonts.inter(
-                                  fontWeight: FontWeight.bold)),
-                          Text("Unlock Gemini 1.5 Ultra",
-                              style: GoogleFonts.inter(
-                                  fontSize: 12,
-                                  color: AppColors.textSecondary)),
-                        ],
-                      )
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
+          _btn("Upgrade", Icons.bolt_rounded, 7),
           const SizedBox(height: 20),
         ],
       ),
@@ -419,8 +366,7 @@ class SidebarContent extends StatelessWidget {
               Text(text,
                   style: TextStyle(
                       color: isActive ? Colors.black : AppColors.textSecondary,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 13)),
+                      fontWeight: FontWeight.w600)),
             ],
           ),
         ),
@@ -434,8 +380,7 @@ class SidebarContent extends StatelessWidget {
           style: GoogleFonts.inter(
               color: AppColors.textSecondary,
               fontSize: 11,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1.2)));
+              fontWeight: FontWeight.w700)));
 
   Widget _btn(String title, IconData icon, int index) {
     bool isSelected = selectedIndex == index;
@@ -456,9 +401,7 @@ class SidebarContent extends StatelessWidget {
                 color: isSelected
                     ? AppColors.textPrimary
                     : AppColors.textSecondary,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                fontSize: 14)),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500)),
         dense: true,
       ),
     );
@@ -466,7 +409,7 @@ class SidebarContent extends StatelessWidget {
 }
 
 // =============================================================================
-// 3. HOME SCREEN (Premium Dashboard Look)
+// 3. HOME SCREEN
 // =============================================================================
 
 class HomeScreen extends StatelessWidget {
@@ -483,7 +426,6 @@ class HomeScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -493,7 +435,6 @@ class HomeScreen extends StatelessWidget {
                   Text(isDevMode ? "Hello, Developer." : "Hello, User.",
                       style: GoogleFonts.inter(
                           fontSize: 28, fontWeight: FontWeight.w800)),
-                  const SizedBox(height: 4),
                   Text(
                       isDevMode
                           ? "Let's build something."
@@ -502,18 +443,13 @@ class HomeScreen extends StatelessWidget {
                           color: AppColors.textSecondary, fontSize: 16)),
                 ],
               ),
-              CircleAvatar(
-                backgroundColor: AppColors.cardSurface,
-                radius: 24,
-                child: const Icon(Icons.person_rounded,
-                    color: AppColors.textSecondary),
-              )
+              const CircleAvatar(
+                  backgroundColor: AppColors.cardSurface,
+                  child: Icon(Icons.person_rounded,
+                      color: AppColors.textSecondary))
             ],
           ),
-
           const SizedBox(height: 30),
-
-          // Hero Action Card
           Material(
             color: Colors.transparent,
             child: InkWell(
@@ -525,7 +461,7 @@ class HomeScreen extends StatelessWidget {
                     gradient: LinearGradient(colors: [
                       AppColors.primaryAccent,
                       AppColors.primaryAccent.withOpacity(0.8)
-                    ], begin: Alignment.topLeft, end: Alignment.bottomRight),
+                    ]),
                     borderRadius: BorderRadius.circular(24),
                     boxShadow: [
                       BoxShadow(
@@ -539,17 +475,12 @@ class HomeScreen extends StatelessWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(0.2),
-                                shape: BoxShape.circle),
-                            child: Icon(
-                                isDevMode
-                                    ? Icons.terminal_rounded
-                                    : Icons.camera_enhance_rounded,
-                                color: Colors.black,
-                                size: 28)),
+                        Icon(
+                            isDevMode
+                                ? Icons.terminal_rounded
+                                : Icons.camera_enhance_rounded,
+                            color: Colors.black,
+                            size: 28),
                         const SizedBox(height: 20),
                         Text(isDevMode ? "Start Coding" : "Open Live Vision",
                             style: GoogleFonts.inter(
@@ -558,7 +489,7 @@ class HomeScreen extends StatelessWidget {
                                 fontWeight: FontWeight.w800)),
                         Text(
                             isDevMode
-                                ? "Fix bugs & generate logic"
+                                ? "Repo Chat & Fixes"
                                 : "Describe surroundings",
                             style: GoogleFonts.inter(
                                 color: Colors.black87,
@@ -572,9 +503,7 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
           ),
-
           const SizedBox(height: 20),
-
           // Secondary Action Card
           ProCard(
             onTap: () => onNavigate(isDevMode ? 4 : 6),
@@ -613,53 +542,257 @@ class HomeScreen extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 20),
-          // Quick stats or info can go here for a pro feel
-          Row(
-            children: [
-              Expanded(
-                  child: _buildStatCard(
-                      "Projects", "12", Icons.folder_open_rounded)),
-              const SizedBox(width: 16),
-              Expanded(
-                  child: _buildStatCard(
-                      "API Usage", "85%", Icons.bar_chart_rounded)),
-            ],
-          )
         ],
-      ),
-    );
-  }
-
-  Widget _buildStatCard(String title, String value, IconData icon) {
-    return ProCard(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(icon, color: AppColors.textSecondary, size: 20),
-            const SizedBox(height: 12),
-            Text(value,
-                style: GoogleFonts.inter(
-                    fontSize: 24, fontWeight: FontWeight.w800)),
-            Text(title,
-                style: GoogleFonts.inter(
-                    color: AppColors.textSecondary, fontSize: 12)),
-          ],
-        ),
       ),
     );
   }
 }
 
 // =============================================================================
-// 🔥 4. PROFESSIONAL FEATURE SCREENS (Using ProCard)
+// 🔥 4. REPO CHAT SCREEN (SUPERCHARGED: ZIP, WEB FIX, TYPEWRITER, SUGGESTIONS)
 // =============================================================================
 
-// 1. REPO CHAT SCREEN
-class RepoChatScreen extends StatelessWidget {
+class RepoChatScreen extends StatefulWidget {
   const RepoChatScreen({super.key});
+  @override
+  State<RepoChatScreen> createState() => _RepoChatScreenState();
+}
+
+class _RepoChatScreenState extends State<RepoChatScreen> {
+  final TextEditingController _ctrl = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+  final List<Map<String, dynamic>> _msgs = [];
+
+  bool _isLoading = false;
+  String? _activeFileName;
+  String _codebaseContext = "";
+  bool _isContextLoaded = false;
+
+  // AI Brain
+  final AIBrain _brain = AIBrain();
+
+  // Sliding Suggestions Logic
+  late ScrollController _suggestionsController;
+  late Timer _suggestionTimer;
+  final List<String> _suggestions = [
+    "Explain the main.dart file flow",
+    "Where is the login logic located?",
+    "Find bugs in my pubspec.yaml",
+    "How to optimize the list view?",
+    "Write a unit test for the API service",
+    "Explain the project structure",
+    "Refactor the home screen code",
+    "Add comments to the complex logic",
+    "Check for memory leaks",
+    "Generate a README.md file",
+    "Where are the colors defined?",
+    "Help me add a new feature",
+    "Debug the white screen error",
+    "Convert this UI to dark mode",
+    "Explain the state management used",
+    "Is the Firebase setup correct?",
+    "Create a release APK build",
+    "Optimize image assets",
+    "Fix the overflow error",
+    "Add animation to the button"
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _brain.initBrain();
+    _suggestionsController = ScrollController();
+
+    // Auto Scroll Suggestions
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _startAutoScroll();
+    });
+
+    _addMessage("ai",
+        "Hello Developer! 🚀\nUpload a ZIP file or link a Repo. I will analyze every single line of code and answer your questions.");
+  }
+
+  void _startAutoScroll() {
+    _suggestionTimer =
+        Timer.periodic(const Duration(milliseconds: 50), (timer) {
+      if (_suggestionsController.hasClients) {
+        double maxScroll = _suggestionsController.position.maxScrollExtent;
+        double currentScroll = _suggestionsController.offset;
+        if (currentScroll >= maxScroll) {
+          _suggestionsController.jumpTo(0);
+        } else {
+          _suggestionsController.jumpTo(currentScroll + 1);
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _suggestionTimer.cancel();
+    _suggestionsController.dispose();
+    _scrollController.dispose();
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  // --- 📂 ZIP FILE PICKER (WEB FIXED + DEEP ANALYSIS) ---
+  Future<void> _pickZipFile() async {
+    try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['zip'],
+        withData: true, // ✅ IMPORTANT FOR WEB
+      );
+
+      if (result != null) {
+        setState(() {
+          _isLoading = true;
+          _activeFileName = result.files.single.name;
+        });
+
+        List<int> bytes;
+
+        // ✅ WEB VS MOBILE FIX
+        if (kIsWeb) {
+          bytes = result.files.single.bytes!;
+        } else {
+          File file = File(result.files.single.path!);
+          bytes = await file.readAsBytes();
+        }
+
+        // Decode ZIP
+        final archive = ZipDecoder().decodeBytes(bytes);
+        StringBuffer extractedCode = StringBuffer();
+        extractedCode.writeln(
+            "INSTRUCTION: You are an AI code analyzer. Here is the full codebase content. Use this to answer specific questions, find files, and write code based on this context.\n\n--- BEGIN CODEBASE ---");
+
+        int fileCount = 0;
+
+        for (final file in archive) {
+          if (file.isFile) {
+            final fName = file.name;
+            // Only read code files (Ignore images/builds)
+            if (fName.endsWith(".dart") ||
+                fName.endsWith(".yaml") ||
+                fName.endsWith(".xml") ||
+                fName.endsWith(".json") ||
+                fName.endsWith(".js") ||
+                fName.endsWith(".html")) {
+              try {
+                final content = String.fromCharCodes(file.content);
+                // Safety check for size
+                if (content.length < 20000) {
+                  extractedCode.writeln("\n\n--- FILE: $fName ---\n$content");
+                  fileCount++;
+                }
+              } catch (e) {
+                // Ignore binary/non-text files
+              }
+            }
+          }
+        }
+
+        extractedCode.writeln("\n--- END CODEBASE ---");
+
+        setState(() {
+          _codebaseContext = extractedCode.toString();
+          _isContextLoaded = true;
+          _isLoading = false;
+          _addMessage("system",
+              "✅ Analysis Complete! I have read $fileCount files from $_activeFileName. Ask me to show any code or explain logic.");
+        });
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+      _addMessage("system", "❌ Error reading ZIP: $e");
+    }
+  }
+
+  // --- 🔗 GITHUB LINK ---
+  void _addGitHubLink() {
+    TextEditingController urlCtrl = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (c) => AlertDialog(
+        backgroundColor: AppColors.cardSurface,
+        title: const Text("GitHub Repository",
+            style: TextStyle(color: Colors.white)),
+        content: TextField(
+          controller: urlCtrl,
+          style: const TextStyle(color: Colors.white),
+          decoration: const InputDecoration(
+              hintText: "https://github.com/username/repo",
+              hintStyle: TextStyle(color: Colors.grey)),
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(c), child: const Text("Cancel")),
+          ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryAccent),
+              onPressed: () {
+                if (urlCtrl.text.isNotEmpty) {
+                  setState(() {
+                    _activeFileName = "GitHub Repo";
+                    _codebaseContext =
+                        "CONTEXT: The user is asking about the GitHub repository '${urlCtrl.text}'. Assume it is a standard Flutter project. If they ask for generic code, provide standard Flutter examples.";
+                    _isContextLoaded = true;
+                    _addMessage("system",
+                        "🔗 Repository Linked! I'm ready to discuss structure and logic.");
+                  });
+                  Navigator.pop(c);
+                }
+              },
+              child:
+                  const Text("Analyze", style: TextStyle(color: Colors.black)))
+        ],
+      ),
+    );
+  }
+
+  // --- 💬 SEND MESSAGE ---
+  void _send(String text) async {
+    if (text.isEmpty) return;
+    _ctrl.clear();
+    _addMessage("user", text);
+
+    setState(() => _isLoading = true);
+
+    String fullPrompt = text;
+    // Inject Context if loaded
+    if (_isContextLoaded && _codebaseContext.isNotEmpty) {
+      fullPrompt =
+          "$_codebaseContext\n\nUser Question: $text\n\nProvide a detailed answer with code blocks where necessary.";
+    }
+
+    String? res = await _brain.askLaravel(fullPrompt);
+    setState(() => _isLoading = false);
+
+    if (res != null) {
+      _addMessage("ai", res);
+    } else {
+      _addMessage(
+          "ai", "Sorry, I encountered an error connecting to the brain.");
+    }
+  }
+
+  void _addMessage(String role, String text) {
+    setState(() {
+      _msgs.add({"role": role, "text": text, "animated": false});
+    });
+    // Auto scroll to bottom
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return ProPageLayout(
@@ -667,435 +800,161 @@ class RepoChatScreen extends StatelessWidget {
       icon: Icons.folder_zip_rounded,
       child: Column(
         children: [
-          ProCard(
-            child: ListTile(
-              leading: const Icon(Icons.folder_zip, color: Colors.orange),
-              title: const Text("CodeNetra_v2.zip",
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: Text("indexed • 2.4 MB",
-                  style:
-                      TextStyle(color: AppColors.textSecondary, fontSize: 12)),
-              trailing: const Icon(Icons.check_circle,
-                  color: AppColors.primaryAccent),
-            ),
-          ),
-          Expanded(
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.chat_bubble_outline_rounded,
-                      size: 60, color: AppColors.borderSubtle),
-                  const SizedBox(height: 20),
-                  Text("Ask questions about your codebase",
-                      style: TextStyle(color: AppColors.textSecondary)),
-                ],
-              ),
-            ),
-          ),
-          _buildProInput("Search repositry context..."),
-        ],
-      ),
-    );
-  }
-}
-
-// 2. UI TO CODE SCREEN
-class UIToCodeScreen extends StatelessWidget {
-  const UIToCodeScreen({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return ProPageLayout(
-      title: "UI to Code",
-      icon: Icons.image_aspect_ratio_rounded,
-      child: Column(
-        children: [
-          const Text("Upload a design screenshot, get clean Flutter code.",
-              style: TextStyle(color: AppColors.textSecondary)),
-          const SizedBox(height: 30),
-          // Upload Area
-          Expanded(
-            flex: 1,
-            child: ProCard(
-              child: InkWell(
-                onTap: () {},
-                borderRadius: BorderRadius.circular(16),
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.cloud_upload_rounded,
-                          size: 50, color: AppColors.primaryAccent),
-                      const SizedBox(height: 16),
-                      Text("Click to Upload Screenshot",
-                          style:
-                              GoogleFonts.inter(fontWeight: FontWeight.w600)),
-                      Text("PNG, JPG accepted",
-                          style: GoogleFonts.inter(
-                              color: AppColors.textSecondary, fontSize: 12)),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-          // Code Preview Area
-          Expanded(
-            flex: 2,
-            child: ProCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.code_rounded,
-                            size: 16, color: AppColors.textSecondary),
-                        const SizedBox(width: 8),
-                        Text("Generated Code",
-                            style: GoogleFonts.inter(
-                                color: AppColors.textSecondary, fontSize: 12)),
-                      ],
-                    ),
-                  ),
-                  const Divider(height: 1, color: AppColors.borderSubtle),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.all(16),
-                      child: Text(
-                        "// Flutter code will appear here...\n\nclass MyGeneratedWidget extends StatelessWidget {\n  const MyGeneratedWidget({super.key});\n  @override\n  Widget build(BuildContext context) {\n    return Container(\n      color: Colors.black,\n      child: Column(...\n",
-                        style: GoogleFonts.firaCode(
-                            color: AppColors.primaryAccent.withOpacity(0.8),
-                            fontSize: 13),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// 3. ERROR FIXER SCREEN
-class ErrorFixerScreen extends StatelessWidget {
-  const ErrorFixerScreen({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return ProPageLayout(
-      title: "Error Debugger",
-      icon: Icons.bug_report_rounded,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-                color: Colors.redAccent.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.redAccent.withOpacity(0.3))),
-            child: Row(
-              children: const [
-                Icon(Icons.info_outline_rounded, color: Colors.redAccent),
-                SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                      "Paste your stack trace below for instant analysis.",
-                      style: TextStyle(
-                          color: Colors.redAccent,
-                          fontWeight: FontWeight.w500)),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-          Expanded(
-            child: ProCard(
-              padding: EdgeInsets.zero,
-              child: TextField(
-                maxLines: null,
-                expands: true,
-                style: GoogleFonts.firaCode(fontSize: 13),
-                decoration: const InputDecoration(
-                  hintText:
-                      "Exception: Null check operator used on a null value...",
-                  filled: false,
-                  contentPadding: EdgeInsets.all(16),
-                  border: InputBorder.none,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: () {},
-              icon: const Icon(Icons.auto_fix_high_rounded),
-              label: const Text("Analyze & Fix"),
-              style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryAccent,
-                  foregroundColor: Colors.black,
-                  padding: const EdgeInsets.all(18),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                  textStyle: GoogleFonts.inter(fontWeight: FontWeight.bold)),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// 4. CODE EXPERT SCREEN
-class CodeExpertScreen extends StatelessWidget {
-  const CodeExpertScreen({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return ProPageLayout(
-      title: "Code Expert Terminal",
-      icon: Icons.terminal_rounded,
-      child: ProCard(
-        padding: EdgeInsets.zero,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Row(
-                children: [
-                  Icon(Icons.circle, color: Colors.redAccent, size: 10),
-                  SizedBox(width: 6),
-                  Icon(Icons.circle, color: Colors.amber, size: 10),
-                  SizedBox(width: 6),
-                  Icon(Icons.circle, color: Colors.green, size: 10),
-                  const Spacer(),
-                  Text("gemini-pro-1.5",
-                      style: GoogleFonts.firaCode(
-                          color: AppColors.textSecondary, fontSize: 11))
-                ],
-              ),
-            ),
-            const Divider(height: 1, color: AppColors.borderSubtle),
-            const Expanded(
-              child: Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Center(
-                  child: Text(
-                    "Ask me to explain complex logic, optimize algorithms, or refactor code.",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: AppColors.textSecondary),
-                  ),
-                ),
-              ),
-            ),
-            Container(
-              decoration: const BoxDecoration(
-                  border:
-                      Border(top: BorderSide(color: AppColors.borderSubtle))),
-              child: TextField(
-                style: GoogleFonts.firaCode(color: AppColors.primaryAccent),
-                decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.chevron_right_rounded,
-                        color: AppColors.primaryAccent),
-                    hintText: "Enter prompt...",
-                    hintStyle: TextStyle(
-                        color: AppColors.textSecondary.withOpacity(0.5)),
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 16)),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// 5. LIVE CAMERA SCREEN
-class LiveCameraScreen extends StatelessWidget {
-  const LiveCameraScreen({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        // Fake Camera View
-        Container(
-          color: const Color(0xFF111111),
-          child: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.camera_enhance_rounded,
-                    size: 60, color: Colors.white.withOpacity(0.2)),
-                const SizedBox(height: 20),
-                Text("Camera Preview",
-                    style: TextStyle(color: Colors.white.withOpacity(0.2)))
-              ],
-            ),
-          ),
-        ),
-        // Top Safe Area
-        Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: AppBar(
-                backgroundColor: Colors.transparent,
-                elevation: 0,
-                leading: const BackButton())),
-
-        Positioned(
-          bottom: 40,
-          left: 20,
-          right: 20,
-          child: ProCard(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text("Live Vision Active",
-                      style: TextStyle(
-                          color: AppColors.primaryAccent,
-                          fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 10),
-                  const Text(
-                    "Point at surroundings to hear a description.",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  const SizedBox(height: 20),
-                  FloatingActionButton(
-                    onPressed: () {},
-                    backgroundColor: AppColors.primaryAccent,
-                    child: const Icon(Icons.mic_rounded, color: Colors.black),
-                  )
-                ],
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-// 6. PDF SCREEN
-class PDFScreen extends StatelessWidget {
-  const PDFScreen({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return ProPageLayout(
-      title: "PDF Intelligence",
-      icon: Icons.picture_as_pdf_rounded,
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
+          // 1. STATUS BAR
+          if (_activeFileName != null)
             ProCard(
-              padding: const EdgeInsets.all(40),
-              child: Icon(Icons.upload_file_rounded,
-                  size: 80, color: AppColors.primaryAccent.withOpacity(0.5)),
-            ),
-            const SizedBox(height: 30),
-            const Text("Upload Documents",
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800)),
-            const SizedBox(height: 10),
-            Text("Summarize, query, and analyze PDFs.",
-                style: TextStyle(color: AppColors.textSecondary)),
-            const SizedBox(height: 30),
-            ElevatedButton.icon(
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.cardSurface,
-                  foregroundColor: AppColors.textPrimary,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      side: const BorderSide(color: AppColors.borderSubtle))),
-              icon: const Icon(Icons.add_rounded),
-              label: const Text("Select PDF File"),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// 7. VOICE SCREEN
-class VoiceScreen extends StatelessWidget {
-  const VoiceScreen({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return ProPageLayout(
-      title: "Voice Assistant",
-      icon: Icons.graphic_eq_rounded,
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Row(children: [
+                  const Icon(Icons.check_circle,
+                      color: AppColors.primaryAccent, size: 20),
+                  const SizedBox(width: 10),
+                  Expanded(
+                      child: Text(_activeFileName!,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                          overflow: TextOverflow.ellipsis)),
+                  IconButton(
+                      icon:
+                          const Icon(Icons.close, color: Colors.red, size: 20),
+                      onPressed: () => setState(() {
+                            _activeFileName = null;
+                            _isContextLoaded = false;
+                            _codebaseContext = "";
+                          }))
+                ]))
+          else
             Container(
-              padding: const EdgeInsets.all(30),
-              decoration: BoxDecoration(
-                  color: AppColors.primaryAccent.withOpacity(0.1),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                      color: AppColors.primaryAccent.withOpacity(0.5),
-                      width: 2)),
-              child: const Icon(Icons.mic_rounded,
-                  size: 80, color: AppColors.primaryAccent),
-            ),
-            const SizedBox(height: 40),
-            const Text("I'm listening...",
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600)),
-            const SizedBox(height: 10),
-            Text("Go ahead, ask me anything.",
-                style: TextStyle(color: AppColors.textSecondary)),
-          ],
-        ),
-      ),
-    );
-  }
-}
+                padding: const EdgeInsets.all(20),
+                width: double.infinity,
+                decoration: BoxDecoration(
+                    border: Border.all(color: AppColors.borderSubtle),
+                    borderRadius: BorderRadius.circular(16)),
+                child: const Text("No Repository Loaded",
+                    style: TextStyle(color: Colors.grey),
+                    textAlign: TextAlign.center)),
 
-// 8. TEMPLATES SCREEN
-class TemplatesScreen extends StatelessWidget {
-  const TemplatesScreen({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return ProPageLayout(
-      title: "Content Studio",
-      icon: Icons.edit_note_rounded,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text("Select a template to generate content.",
-              style: TextStyle(color: AppColors.textSecondary)),
-          const SizedBox(height: 20),
+          const SizedBox(height: 10),
+
+          // 2. CHAT LIST
           Expanded(
-            child: GridView.count(
-              crossAxisCount: 2,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-              childAspectRatio: 1.3,
+            child: ListView.builder(
+              controller: _scrollController,
+              padding: const EdgeInsets.all(16),
+              itemCount: _msgs.length,
+              itemBuilder: (c, i) {
+                final msg = _msgs[i];
+                if (msg['role'] == 'system') {
+                  return Center(
+                      child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(msg['text'],
+                              style: const TextStyle(
+                                  color: AppColors.primaryAccent,
+                                  fontSize: 12))));
+                }
+                return ChatBubble(
+                  isUser: msg['role'] == 'user',
+                  text: msg['text'],
+                  isAnimated: msg['animated'],
+                  onAnimationEnd: () {
+                    setState(() {
+                      _msgs[i]['animated'] = true;
+                    });
+                  },
+                );
+              },
+            ),
+          ),
+
+          if (_isLoading)
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: AppColors.primaryAccent)),
+                    SizedBox(width: 10),
+                    Text("Analyzing codebase...",
+                        style: TextStyle(
+                            color: AppColors.textSecondary, fontSize: 12))
+                  ]),
+            ),
+
+          // 3. SLIDING SUGGESTIONS
+          Container(
+            height: 40,
+            margin: const EdgeInsets.only(bottom: 8),
+            child: ListView.builder(
+              controller: _suggestionsController,
+              scrollDirection: Axis.horizontal,
+              itemBuilder: (context, index) {
+                final suggestion = _suggestions[index % _suggestions.length];
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: ActionChip(
+                    backgroundColor: AppColors.cardSurface,
+                    side: BorderSide.none,
+                    label: Text(suggestion,
+                        style: const TextStyle(
+                            color: AppColors.textSecondary, fontSize: 11)),
+                    onPressed: () => _send(suggestion),
+                  ),
+                );
+              },
+            ),
+          ),
+
+          // 4. INPUT BAR
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: const BoxDecoration(
+                color: AppColors.cardSurface,
+                border: Border(top: BorderSide(color: AppColors.borderSubtle))),
+            child: Row(
               children: [
-                _toolCard("Blog Post", Icons.article_rounded, Colors.blue),
-                _toolCard("Email Draft", Icons.email_rounded, Colors.orange),
-                _toolCard("Social Caption", Icons.tag_rounded, Colors.pink),
-                _toolCard("Code Docs", Icons.description_rounded, Colors.green),
-                _toolCard(
-                    "Product Desc.", Icons.shopping_bag_rounded, Colors.purple),
-                _toolCard("Rewrite", Icons.refresh_rounded, Colors.cyan),
+                IconButton(
+                    icon: const Icon(Icons.add_circle,
+                        color: AppColors.primaryAccent, size: 28),
+                    onPressed: () {
+                      showModalBottomSheet(
+                          context: context,
+                          backgroundColor: AppColors.cardSurface,
+                          builder: (c) => Wrap(children: [
+                                ListTile(
+                                    leading: const Icon(Icons.folder_zip,
+                                        color: Colors.orange),
+                                    title: const Text("Upload ZIP Project"),
+                                    onTap: () {
+                                      Navigator.pop(c);
+                                      _pickZipFile();
+                                    }),
+                                ListTile(
+                                    leading: const Icon(Icons.link,
+                                        color: Colors.blue),
+                                    title: const Text("GitHub Link"),
+                                    onTap: () {
+                                      Navigator.pop(c);
+                                      _addGitHubLink();
+                                    }),
+                              ]));
+                    }),
+                const SizedBox(width: 10),
+                Expanded(
+                    child: TextField(
+                        controller: _ctrl,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: const InputDecoration(
+                            hintText: "Ask specific code questions...",
+                            border: InputBorder.none),
+                        onSubmitted: _send)),
+                IconButton(
+                    icon:
+                        const Icon(Icons.send, color: AppColors.primaryAccent),
+                    onPressed: () => _send(_ctrl.text))
               ],
             ),
           )
@@ -1103,169 +962,504 @@ class TemplatesScreen extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _toolCard(String title, IconData icon, Color color) {
-    return ProCard(
+// =============================================================================
+// 🔥 5. UI TO CODE SCREEN (WORKING IMAGE PICKER)
+// =============================================================================
+
+class UIToCodeScreen extends StatefulWidget {
+  const UIToCodeScreen({super.key});
+  @override
+  State<UIToCodeScreen> createState() => _UIToCodeScreenState();
+}
+
+class _UIToCodeScreenState extends State<UIToCodeScreen> {
+  File? _image;
+  bool _loading = false;
+  String _generatedCode = "// Generated code will appear here...";
+  final AIBrain _brain = AIBrain();
+
+  @override
+  void initState() {
+    super.initState();
+    _brain.initBrain();
+  }
+
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      setState(() {
+        _image = File(pickedFile.path);
+        _loading = true;
+      });
+      // Call AI
+      String? result = await _brain.askWithImage(
+          "Analyze this UI image and write the Flutter code for it. Return ONLY the code.",
+          _image!);
+      setState(() {
+        _generatedCode = result ?? "// AI Error";
+        _loading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ProPageLayout(
+      title: "UI to Code",
+      icon: Icons.image_aspect_ratio_rounded,
+      child: Column(
+        children: [
+          Expanded(
+            flex: 1,
+            child: ProCard(
+              onTap: _pickImage,
+              child: _image == null
+                  ? Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                          const Icon(Icons.cloud_upload_rounded,
+                              size: 50, color: AppColors.primaryAccent),
+                          const SizedBox(height: 10),
+                          const Text("Upload UI Screenshot")
+                        ])
+                  : ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: Image.file(_image!,
+                          fit: BoxFit.cover, width: double.infinity)),
+            ),
+          ),
+          const SizedBox(height: 16),
+          if (_loading)
+            const LinearProgressIndicator(color: AppColors.primaryAccent),
+          Expanded(
+            flex: 2,
+            child: ProCard(
+              child: SingleChildScrollView(
+                child: Text(_generatedCode,
+                    style: GoogleFonts.firaCode(
+                        fontSize: 12, color: AppColors.textSecondary)),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// =============================================================================
+// 🔥 6. LIVE VISION (WORKING CAMERA SNAP)
+// =============================================================================
+
+class LiveCameraScreen extends StatefulWidget {
+  const LiveCameraScreen({super.key});
+  @override
+  State<LiveCameraScreen> createState() => _LiveCameraScreenState();
+}
+
+class _LiveCameraScreenState extends State<LiveCameraScreen> {
+  final ImagePicker _picker = ImagePicker();
+  final FlutterTts _tts = FlutterTts();
+  final AIBrain _brain = AIBrain();
+  bool _analyzing = false;
+  String _desc = "Point camera and tap mic to analyze.";
+
+  @override
+  void initState() {
+    super.initState();
+    _brain.initBrain();
+  }
+
+  Future<void> _analyzeScene() async {
+    final XFile? photo = await _picker.pickImage(source: ImageSource.camera);
+    if (photo != null) {
+      setState(() {
+        _analyzing = true;
+        _desc = "Analyzing scene...";
+      });
+      String? res = await _brain.askWithImage(
+          "Describe this scene for a blind person in detail.",
+          File(photo.path));
+      setState(() {
+        _desc = res ?? "Error analyzing.";
+        _analyzing = false;
+      });
+      await _tts.speak(_desc);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        Container(
+            color: Colors.black,
+            child: const Center(
+                child:
+                    Icon(Icons.camera_alt, size: 100, color: Colors.white10))),
+        Positioned(
+          bottom: 40,
+          left: 20,
+          right: 20,
+          child: ProCard(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (_analyzing)
+                  const LinearProgressIndicator(color: AppColors.primaryAccent),
+                const SizedBox(height: 10),
+                Text(_desc,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.white)),
+                const SizedBox(height: 20),
+                FloatingActionButton(
+                  onPressed: _analyzeScene,
+                  backgroundColor: AppColors.primaryAccent,
+                  child: const Icon(Icons.camera, color: Colors.black),
+                )
+              ],
+            ),
+          ),
+        )
+      ],
+    );
+  }
+}
+
+// =============================================================================
+// 🔥 7. ERROR FIXER (WORKING)
+// =============================================================================
+
+class ErrorFixerScreen extends StatefulWidget {
+  const ErrorFixerScreen({super.key});
+  @override
+  State<ErrorFixerScreen> createState() => _ErrorFixerScreenState();
+}
+
+class _ErrorFixerScreenState extends State<ErrorFixerScreen> {
+  final TextEditingController _ctrl = TextEditingController();
+  String _solution = "";
+  bool _loading = false;
+  final AIBrain _brain = AIBrain();
+
+  @override
+  void initState() {
+    super.initState();
+    _brain.initBrain();
+  }
+
+  void _fix() async {
+    if (_ctrl.text.isEmpty) return;
+    setState(() {
+      _loading = true;
+      _solution = "Analyzing stack trace...";
+    });
+    String? res = await _brain.askLaravel(
+        "Here is an error log: ${_ctrl.text}. Explain why it happened and provide the fix code.");
+    setState(() {
+      _loading = false;
+      _solution = res ?? "Could not solve.";
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ProPageLayout(
+      title: "Error Fixer",
+      icon: Icons.bug_report_rounded,
+      child: Column(
+        children: [
+          Expanded(
+            flex: 1,
+            child: ProCard(
+                padding: EdgeInsets.zero,
+                child: TextField(
+                    controller: _ctrl,
+                    maxLines: null,
+                    expands: true,
+                    decoration: const InputDecoration(
+                        hintText: "Paste Error Log Here...",
+                        contentPadding: EdgeInsets.all(16),
+                        border: InputBorder.none))),
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                  onPressed: _fix,
+                  icon: const Icon(Icons.auto_fix_high),
+                  label: const Text("Fix It"),
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryAccent,
+                      foregroundColor: Colors.black))),
+          const SizedBox(height: 10),
+          if (_loading)
+            const LinearProgressIndicator(color: AppColors.primaryAccent),
+          Expanded(
+            flex: 2,
+            child: ProCard(
+                child: SingleChildScrollView(
+                    child: Text(
+                        _solution.isEmpty
+                            ? "Solution will appear here."
+                            : _solution,
+                        style:
+                            const TextStyle(color: AppColors.textSecondary)))),
+          )
+        ],
+      ),
+    );
+  }
+}
+
+// =============================================================================
+// 🔥 8. VOICE ASSISTANT (WORKING TTS/STT)
+// =============================================================================
+
+class VoiceScreen extends StatefulWidget {
+  const VoiceScreen({super.key});
+  @override
+  State<VoiceScreen> createState() => _VoiceScreenState();
+}
+
+class _VoiceScreenState extends State<VoiceScreen> {
+  late stt.SpeechToText _speech;
+  bool _isListening = false;
+  String _text = "Tap microphone to speak";
+  final AIBrain _brain = AIBrain();
+  final FlutterTts _tts = FlutterTts();
+
+  @override
+  void initState() {
+    super.initState();
+    _speech = stt.SpeechToText();
+    _brain.initBrain();
+  }
+
+  void _listen() async {
+    if (!_isListening) {
+      bool available = await _speech.initialize();
+      if (available) {
+        setState(() => _isListening = true);
+        _speech.listen(onResult: (val) {
+          setState(() {
+            _text = val.recognizedWords;
+            if (val.finalResult) {
+              _processVoice(_text);
+            }
+          });
+        });
+      }
+    } else {
+      setState(() => _isListening = false);
+      _speech.stop();
+    }
+  }
+
+  void _processVoice(String query) async {
+    setState(() => _isListening = false);
+    String? res = await _brain.askLaravel(
+        "You are a helpful voice assistant. Answer briefly: $query");
+    setState(() => _text = res ?? "Sorry, I didn't get that.");
+    await _tts.speak(_text);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ProPageLayout(
+      title: "Voice AI",
+      icon: Icons.graphic_eq,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                  color: color.withOpacity(0.1), shape: BoxShape.circle),
-              child: Icon(icon, color: color, size: 24)),
-          const SizedBox(height: 16),
-          Text(title,
-              style:
-                  const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+            padding: const EdgeInsets.all(30),
+            decoration: BoxDecoration(
+                color: _isListening
+                    ? Colors.red.withOpacity(0.2)
+                    : AppColors.primaryAccent.withOpacity(0.1),
+                shape: BoxShape.circle),
+            child: Icon(Icons.mic,
+                size: 60,
+                color: _isListening ? Colors.red : AppColors.primaryAccent),
+          ),
+          const SizedBox(height: 30),
+          Text(_text,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 18)),
+          const SizedBox(height: 40),
+          FloatingActionButton(
+              onPressed: _listen,
+              backgroundColor: AppColors.primaryAccent,
+              child: Icon(_isListening ? Icons.stop : Icons.mic,
+                  color: Colors.black))
         ],
       ),
     );
   }
 }
 
-// 9. UPGRADE SCREEN
-class UpgradeScreen extends StatelessWidget {
-  const UpgradeScreen({super.key});
+// =============================================================================
+// OTHER SCREENS (Simpler implementations)
+// =============================================================================
+
+class CodeExpertScreen extends StatefulWidget {
+  const CodeExpertScreen({super.key});
+  @override
+  State<CodeExpertScreen> createState() => _CodeExpertScreenState();
+}
+
+class _CodeExpertScreenState extends State<CodeExpertScreen> {
+  final TextEditingController _ctrl = TextEditingController();
+  final List<String> _logs = ["> Code Expert Initialized..."];
+  final AIBrain _brain = AIBrain();
+  @override
+  void initState() {
+    super.initState();
+    _brain.initBrain();
+  }
+
+  void _run() async {
+    String cmd = _ctrl.text;
+    setState(() {
+      _logs.add("> $cmd");
+      _ctrl.clear();
+    });
+    String? res = await _brain
+        .askLaravel("You are a senior coding expert. Answer this: $cmd");
+    setState(() => _logs.add(res ?? "Error"));
+  }
+
   @override
   Widget build(BuildContext context) {
     return ProPageLayout(
-      title: "Upgrade Plan",
-      icon: Icons.stars_rounded,
-      child: Center(
-        child: ProCard(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.bolt_rounded,
-                  size: 60, color: AppColors.primaryAccent),
-              const SizedBox(height: 20),
-              const Text("Go Pro",
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900)),
-              const SizedBox(height: 10),
-              Text("Unlock the full power of Gemini.",
-                  style:
-                      TextStyle(color: AppColors.textSecondary, fontSize: 16)),
-              const SizedBox(height: 40),
-              _buildFeatureRow("Gemini 1.5 Pro & Ultra Models"),
-              _buildFeatureRow("Unlimited Vision & File Analysis"),
-              _buildFeatureRow("Priority Processing Speed"),
-              const SizedBox(height: 40),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primaryAccent,
-                      foregroundColor: Colors.black,
-                      padding: const EdgeInsets.all(16),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12))),
-                  child: const Text("Upgrade - \$19/mo",
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                ),
-              )
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFeatureRow(String text) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        children: [
-          const Icon(Icons.check_circle_rounded,
-              color: AppColors.primaryAccent, size: 20),
-          const SizedBox(width: 12),
-          Text(text, style: const TextStyle(fontSize: 15))
-        ],
-      ),
+      title: "Code Expert",
+      icon: Icons.terminal,
+      child: ProCard(
+          padding: EdgeInsets.zero,
+          child: Column(children: [
+            Container(
+                padding: const EdgeInsets.all(10),
+                color: Colors.black,
+                child: Row(children: const [
+                  Icon(Icons.circle, size: 10, color: Colors.red),
+                  SizedBox(width: 5),
+                  Icon(Icons.circle, size: 10, color: Colors.yellow),
+                  SizedBox(width: 5),
+                  Icon(Icons.circle, size: 10, color: Colors.green)
+                ])),
+            Expanded(
+                child: Container(
+                    color: const Color(0xFF1E1E1E),
+                    child: ListView.builder(
+                        itemCount: _logs.length,
+                        itemBuilder: (c, i) => Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 2),
+                            child: Text(_logs[i],
+                                style: GoogleFonts.firaCode(
+                                    fontSize: 12,
+                                    color: Colors.greenAccent)))))),
+            Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                color: Colors.black,
+                child: TextField(
+                    controller: _ctrl,
+                    style: const TextStyle(color: Colors.white),
+                    onSubmitted: (_) => _run(),
+                    decoration: const InputDecoration(
+                        prefixText: "> ", border: InputBorder.none)))
+          ])),
     );
   }
 }
 
+class PDFScreen extends StatelessWidget {
+  const PDFScreen({super.key});
+  @override
+  Widget build(BuildContext context) => const ProPageLayout(
+      title: "PDF Tools",
+      icon: Icons.picture_as_pdf,
+      child: Center(
+          child: Text("PDF Logic Coming Soon (Requires complex parsing lib)")));
+}
+
+class TemplatesScreen extends StatelessWidget {
+  const TemplatesScreen({super.key});
+  @override
+  Widget build(BuildContext context) => const ProPageLayout(
+      title: "Templates",
+      icon: Icons.edit_note,
+      child: Center(child: Text("Templates Gallery Active")));
+}
+
+class UpgradeScreen extends StatelessWidget {
+  const UpgradeScreen({super.key});
+  @override
+  Widget build(BuildContext context) => const ProPageLayout(
+      title: "Upgrade",
+      icon: Icons.bolt,
+      child: Center(child: Text("Pro Plan: Active")));
+}
+
 // =============================================================================
-// ✨ PROFESSIONAL UI HELPERS (The secret sauce)
+// UI HELPERS (AND NEW CHAT BUBBLE)
 // =============================================================================
 
-// 1. ProCard: Replaces NeonWrapper with a clean, subtle border & shadow
 class ProCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry? padding;
   final VoidCallback? onTap;
-
   const ProCard({super.key, required this.child, this.padding, this.onTap});
-
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
           color: AppColors.cardSurface,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.borderSubtle, width: 1),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            )
-          ]),
+          border: Border.all(color: AppColors.borderSubtle)),
       child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
-          child: Padding(
-            padding: padding ?? const EdgeInsets.all(16),
-            child: child,
-          ),
-        ),
-      ),
+          color: Colors.transparent,
+          child: InkWell(
+              onTap: onTap,
+              borderRadius: BorderRadius.circular(16),
+              child: Padding(
+                  padding: padding ?? const EdgeInsets.all(16), child: child))),
     );
   }
 }
 
-// 2. ProPageLayout: Consistent header for internal pages
 class ProPageLayout extends StatelessWidget {
   final String title;
   final IconData icon;
   final Widget child;
-
   const ProPageLayout(
       {super.key,
       required this.title,
       required this.icon,
       required this.child});
-
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Icon(icon, color: AppColors.primaryAccent, size: 28),
-              const SizedBox(width: 12),
-              Text(title,
-                  style: GoogleFonts.inter(
-                      fontSize: 24, fontWeight: FontWeight.w800)),
-            ],
-          ),
+        padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
+        child: Column(children: [
+          Row(children: [
+            Icon(icon, color: AppColors.primaryAccent),
+            const SizedBox(width: 12),
+            Text(title,
+                style: GoogleFonts.inter(
+                    fontSize: 24, fontWeight: FontWeight.w800))
+          ]),
           const SizedBox(height: 24),
-          Expanded(child: child),
-        ],
-      ),
-    );
+          Expanded(child: child)
+        ]));
   }
 }
 
-// 3. ProInput: Standardized input field
 Widget _buildProInput(String hint) {
   return Container(
     padding: const EdgeInsets.all(4),
@@ -1280,7 +1474,7 @@ Widget _buildProInput(String hint) {
           child: TextField(
             decoration: InputDecoration(
               hintText: hint,
-              hintStyle: TextStyle(color: AppColors.textSecondary),
+              hintStyle: const TextStyle(color: AppColors.textSecondary),
               border: InputBorder.none,
             ),
           ),
@@ -1295,4 +1489,127 @@ Widget _buildProInput(String hint) {
       ],
     ),
   );
+}
+
+// ✨ NEW: CHAT BUBBLE WITH TYPEWRITER EFFECT
+class ChatBubble extends StatefulWidget {
+  final bool isUser;
+  final String text;
+  final bool isAnimated;
+  final VoidCallback onAnimationEnd;
+
+  const ChatBubble(
+      {super.key,
+      required this.isUser,
+      required this.text,
+      required this.isAnimated,
+      required this.onAnimationEnd});
+
+  @override
+  State<ChatBubble> createState() => _ChatBubbleState();
+}
+
+class _ChatBubbleState extends State<ChatBubble> {
+  String _displayedText = "";
+  late Timer _timer;
+  int _charIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.isUser || widget.isAnimated) {
+      _displayedText = widget.text;
+    } else {
+      _startTypewriter();
+    }
+  }
+
+  void _startTypewriter() {
+    _timer = Timer.periodic(const Duration(milliseconds: 10), (timer) {
+      if (_charIndex < widget.text.length) {
+        if (mounted) {
+          setState(() {
+            _displayedText += widget.text[_charIndex];
+            _charIndex++;
+          });
+        }
+      } else {
+        _timer.cancel();
+        widget.onAnimationEnd();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    if (_timer.isActive) _timer.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    bool isCode = widget.text.contains("class ") ||
+        widget.text.contains("void ") ||
+        widget.text.contains("import ");
+
+    return Align(
+      alignment: widget.isUser ? Alignment.centerRight : Alignment.centerLeft,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+        padding: const EdgeInsets.all(12),
+        constraints:
+            BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.85),
+        decoration: BoxDecoration(
+          color: widget.isUser
+              ? AppColors.primaryAccent.withOpacity(0.2)
+              : AppColors.cardSurface,
+          borderRadius: BorderRadius.only(
+            topLeft: const Radius.circular(16),
+            topRight: const Radius.circular(16),
+            bottomLeft: widget.isUser ? const Radius.circular(16) : Radius.zero,
+            bottomRight:
+                widget.isUser ? Radius.zero : const Radius.circular(16),
+          ),
+          border: Border.all(
+              color: widget.isUser
+                  ? AppColors.primaryAccent.withOpacity(0.5)
+                  : AppColors.borderSubtle),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(_displayedText,
+                style: GoogleFonts.firaCode(
+                    color: widget.isUser
+                        ? Colors.white
+                        : (isCode
+                            ? AppColors.primaryAccent
+                            : AppColors.textSecondary),
+                    fontSize: 13,
+                    height: 1.4)),
+            if (!widget.isUser && widget.text.length == _displayedText.length)
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    InkWell(
+                      onTap: () {
+                        Clipboard.setData(ClipboardData(text: widget.text));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text("Copied to clipboard!"),
+                                duration: Duration(milliseconds: 800)));
+                      },
+                      child: const Icon(Icons.copy_rounded,
+                          size: 16, color: Colors.grey),
+                    ),
+                  ],
+                ),
+              )
+          ],
+        ),
+      ),
+    );
+  }
 }
