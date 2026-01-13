@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:google_fonts/google_fonts.dart';
@@ -26,6 +27,7 @@ import 'ai_logic.dart';
 // =============================================================================
 // ✨ PROFESSIONAL THEME COLORS
 // =============================================================================
+
 class AppColors {
   static const Color primaryAccent = Color(0xFFCCFF00); // Neon Green
   static const Color backgroundDark = Color(0xFF0A0A0A); // Deepest Black
@@ -184,7 +186,7 @@ class _MainLayoutState extends State<MainLayout> {
       const RepoChatScreen(), // 1 (ULTIMATE VERSION)
       const TemplatesScreen(), // 2
       const ErrorFixerScreen(), // 3
-      const UIToCodeScreen(), // 4 (TEACHER VERSION)
+      const UIToCodeScreen(), // 4 (UPGRADED VERSION)
       const PDFScreen(), // 5
       const VoiceScreen(), // 6
       const UpgradeScreen(), // 7
@@ -714,19 +716,16 @@ class _RepoChatScreenState extends State<RepoChatScreen>
 
         // 3️⃣ STEP 3: BUILD PROMPT
         extractedCode.writeln("""
-        SYSTEM INSTRUCTION: You are an Expert Code Auditor specialized in $projectType.
-        
-        📊 **PROJECT METADATA:**
-        - Detected Language: $projectType
-        - Total Files: ${allFileNames.length}
-        - File List: ${allFileNames.join(", ")}
-        
-        🎯 **YOUR GOAL:**
-        1. Use the 'File List' to answer existence questions.
-        2. Analyze content below for bugs and logic.
-        
-        --- BEGIN CRITICAL FILE CONTENT ---
-        """);
+SYSTEM INSTRUCTION: You are an Expert Code Auditor specialized in $projectType.
+📊 **PROJECT METADATA:**
+- Detected Language: $projectType
+- Total Files: ${allFileNames.length}
+- File List: ${allFileNames.join(", ")}
+🎯 **YOUR GOAL:**
+1. Use the 'File List' to answer existence questions.
+2. Analyze content below for bugs and logic.
+--- BEGIN CRITICAL FILE CONTENT ---
+""");
 
         // 4️⃣ STEP 4: EXTRACT CONTENT (Smart Priority)
         int criticalFilesRead = 0;
@@ -780,7 +779,7 @@ class _RepoChatScreenState extends State<RepoChatScreen>
 🛠️ **Project Type:** $projectType
 📂 **Total Files:** ${allFileNames.length}
 🧠 **Analyzed:** $criticalFilesRead critical files.
-          """);
+""");
         });
       }
     } catch (e) {
@@ -856,6 +855,7 @@ class _RepoChatScreenState extends State<RepoChatScreen>
     );
   }
 
+  // 🔥 UPDATED DEEP ANALYSIS LOGIC
   void _send(String text) async {
     if (text.isEmpty) return;
     _ctrl.clear();
@@ -863,9 +863,22 @@ class _RepoChatScreenState extends State<RepoChatScreen>
     setState(() => _isLoading = true);
 
     String fullPrompt = text;
+
     if (_isContextLoaded && _codebaseContext.isNotEmpty) {
-      fullPrompt =
-          "$_codebaseContext\n\nUSER QUESTION: $text\n\nRULE: Answer STRICTLY based on the file content. Do not hallucinate features not present.";
+      fullPrompt = """
+      CONTEXT START (Full Codebase):
+      $_codebaseContext
+      CONTEXT END.
+
+      USER QUESTION: $text
+
+      ⚠️ CRITICAL INSTRUCTIONS FOR AI:
+      1. You are a Senior Software Architect.
+      2. Deeply analyze the code structure above.
+      3. If the user asks for code, do NOT summarize. Provide the FULL, CORRECTED FILE content.
+      4. Detect logic errors, memory leaks, or bad practices.
+      5. Use a professional, authoritative technical tone.
+      """;
     }
 
     String? res = await _brain.askLaravel(fullPrompt);
@@ -981,29 +994,43 @@ class _RepoChatScreenState extends State<RepoChatScreen>
 }
 
 // =============================================================================
-// 🔥 5. UI TO CODE SCREEN (TEACHER SPLIT UI)
+// 🔥 5. UI TO CODE SCREEN (UPGRADED: SCANNER + MULTI-LANGUAGE + FULL CODE)
 // =============================================================================
 
 class UIToCodeScreen extends StatefulWidget {
   const UIToCodeScreen({super.key});
+
   @override
   State<UIToCodeScreen> createState() => _UIToCodeScreenState();
 }
 
-class _UIToCodeScreenState extends State<UIToCodeScreen> {
+class _UIToCodeScreenState extends State<UIToCodeScreen>
+    with SingleTickerProviderStateMixin {
   File? _image;
   bool _loading = false;
+  bool _isScanning = false; // For Scanner Animation
+  String _selectedLanguage = "Flutter"; // Default Language
+  String _generatedCode = "";
 
-  String _teacherGuide = "";
-  String _codePart = "";
-
+  // Animation Controller for Scanner
+  late AnimationController _scanController;
   final AIBrain _brain = AIBrain();
-  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     _brain.initBrain();
+    // Laser Scanner Animation
+    _scanController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _scanController.dispose();
+    super.dispose();
   }
 
   Future<void> _pickImage(ImageSource source) async {
@@ -1013,8 +1040,8 @@ class _UIToCodeScreenState extends State<UIToCodeScreen> {
       if (pickedFile != null) {
         setState(() {
           _image = File(pickedFile.path);
-          _teacherGuide = "";
-          _codePart = "";
+          _generatedCode = "";
+          _isScanning = false;
         });
       }
     } catch (e) {
@@ -1023,49 +1050,103 @@ class _UIToCodeScreenState extends State<UIToCodeScreen> {
     }
   }
 
-  Future<void> _generateCode() async {
+  // 🔥 Multi-Language Popup
+  void _showLanguageSelector() {
     if (_image == null) return;
 
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.cardSurface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(25),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text("Select Output Language",
+                  style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold)),
+              const SizedBox(height: 10),
+              Text("Choose the technology for your generated code.",
+                  style: GoogleFonts.inter(color: Colors.grey, fontSize: 14)),
+              const SizedBox(height: 25),
+              Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                alignment: WrapAlignment.center,
+                children: [
+                  _langOption("Flutter", Icons.flutter_dash),
+                  _langOption("React Native", Icons.javascript),
+                  _langOption("HTML + Tailwind", Icons.html),
+                  _langOption("Python Tkinter", Icons.code),
+                  _langOption("Swift UI", Icons.apple),
+                ],
+              )
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _langOption(String lang, IconData icon) {
+    return ActionChip(
+      avatar: Icon(icon, size: 18, color: Colors.black),
+      label: Text(lang,
+          style: const TextStyle(
+              fontWeight: FontWeight.bold, color: Colors.black, fontSize: 14)),
+      backgroundColor: AppColors.primaryAccent,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+      onPressed: () {
+        Navigator.pop(context);
+        setState(() => _selectedLanguage = lang);
+        _generateCode(); // Start Generation
+      },
+    );
+  }
+
+  Future<void> _generateCode() async {
     setState(() {
       _loading = true;
-      _teacherGuide = "";
-      _codePart = "";
+      _isScanning = true; // Start Laser
+      _generatedCode = "";
     });
 
+    // 🔥 STRONG PROMPT FOR FULL CODE
     String prompt = """
-    You are an expert Flutter Instructor.
-    Look at this UI screenshot and write the code.
-
-    FORMAT YOUR RESPONSE LIKE THIS:
+    You are an Expert Senior Developer. 
+    Analyze the uploaded UI screenshot pixel-by-pixel.
     
-    [GUIDE START]
-    Here explain Step-by-step:
-    1. File Name: (e.g. login.dart)
-    2. Connection: (How to use in main.dart)
-    [GUIDE END]
-
-    ```dart
-    // YOUR FLUTTER CODE HERE
-    import 'package:flutter/material.dart';
-    ...
-    ```
+    TARGET LANGUAGE: $_selectedLanguage
+    
+    TASK: Write the FULL, PRODUCTION-READY code to replicate this UI exactly.
+    
+    RULES:
+    1. Do NOT use placeholders like "Add logic here". Write the full layout logic.
+    2. If it's Flutter, use modern Material 3, Google Fonts, and clean architecture.
+    3. If it's HTML, use Tailwind CSS classes via CDN for direct preview.
+    4. Provide at least 300-500 lines if necessary to make it perfect.
+    5. Ensure all buttons, inputs, shadows, and gradients are coded exactly as seen.
+    6. Return ONLY the code inside a code block. No explanations.
     """;
 
     String? result = await _brain.askWithImage(prompt, _image!);
 
     setState(() {
       _loading = false;
+      _isScanning = false; // Stop Laser
       if (result != null) {
-        if (result.contains("```dart")) {
-          List<String> parts = result.split("```dart");
-          _teacherGuide = parts[0]
-              .replaceAll("[GUIDE START]", "")
-              .replaceAll("[GUIDE END]", "")
-              .trim();
-          _codePart = parts[1].replaceAll("```", "").trim();
-        } else {
-          _teacherGuide = result;
-        }
+        _generatedCode = result
+            .replaceAll("```dart", "")
+            .replaceAll("```html", "")
+            .replaceAll("```", "")
+            .trim();
       }
     });
   }
@@ -1073,131 +1154,121 @@ class _UIToCodeScreenState extends State<UIToCodeScreen> {
   @override
   Widget build(BuildContext context) {
     return ProPageLayout(
-      title: "UI to Code",
-      icon: Icons.image_aspect_ratio_rounded,
+      title: "UI to Code Pro",
+      icon: Icons.view_quilt_rounded,
       child: Column(
         children: [
-          if (_codePart.isEmpty) Expanded(flex: 2, child: _buildImageSection()),
-          if (_loading)
-            Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                children: [
-                  const CircularProgressIndicator(
-                      color: AppColors.primaryAccent),
-                  const SizedBox(height: 10),
-                  Text("Analyzing UI & Writing Code...",
-                      style: GoogleFonts.outfit(color: AppColors.primaryAccent))
-                ],
-              ),
+          // 1. IMAGE AREA (SCANNER)
+          Expanded(
+            flex: _generatedCode.isEmpty ? 4 : 2, // Shrink if code is there
+            child: _buildImageSection(),
+          ),
+
+          // 2. LOADING STATUS
+          if (_loading) ...[
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                        color: AppColors.primaryAccent, strokeWidth: 2)),
+                const SizedBox(width: 15),
+                Text("Analyzing Pixels & Writing $_selectedLanguage Code...",
+                    style: GoogleFonts.firaCode(
+                        color: AppColors.primaryAccent, fontSize: 12)),
+              ],
             ),
-          if (_teacherGuide.isNotEmpty || _codePart.isNotEmpty)
+          ],
+
+          // 3. CODE RESULT AREA (Black Box)
+          if (_generatedCode.isNotEmpty)
             Expanded(
-              flex: 3,
-              child: SingleChildScrollView(
-                controller: _scrollController,
-                padding: const EdgeInsets.all(10),
+              flex: 5,
+              child: Container(
+                margin: const EdgeInsets.only(top: 20),
+                decoration: BoxDecoration(
+                    color: const Color(0xFF0F0F0F), // Deep Black
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.borderSubtle),
+                    boxShadow: [
+                      BoxShadow(
+                          color: Colors.black.withOpacity(0.5), blurRadius: 10)
+                    ]),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (_teacherGuide.isNotEmpty)
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        margin: const EdgeInsets.only(bottom: 16),
-                        decoration: BoxDecoration(
-                            color: AppColors.cardSurface,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: Colors.white24)),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(children: const [
-                              Icon(Icons.school,
-                                  color: Colors.orange, size: 20),
-                              SizedBox(width: 10),
-                              Text("TEACHER'S GUIDE",
-                                  style: TextStyle(
-                                      color: Colors.orange,
-                                      fontWeight: FontWeight.bold))
-                            ]),
-                            const SizedBox(height: 10),
-                            Text(_teacherGuide,
-                                style: GoogleFonts.outfit(
-                                    color: Colors.white,
-                                    fontSize: 15,
-                                    height: 1.5)),
-                          ],
-                        ),
-                      ),
-                    if (_codePart.isNotEmpty)
-                      Container(
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          color: Colors.black,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: Colors.grey.shade800),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
+                    // Header
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 10),
+                      decoration: BoxDecoration(
+                          color: const Color(0xFF1A1A1A),
+                          borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(16)),
+                          border: const Border(
+                              bottom:
+                                  BorderSide(color: AppColors.borderSubtle))),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(Icons.code,
+                                  color: _getLangColor(), size: 18),
+                              const SizedBox(width: 10),
+                              Text("$_selectedLanguage Output",
+                                  style: GoogleFonts.inter(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold)),
+                            ],
+                          ),
+                          InkWell(
+                            onTap: () {
+                              Clipboard.setData(
+                                  ClipboardData(text: _generatedCode));
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content: Text(
+                                          "✅ Full Code Copied! Paste & Run.")));
+                            },
+                            child: Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 10),
+                                  horizontal: 12, vertical: 6),
                               decoration: BoxDecoration(
-                                  color: Colors.grey.shade900,
-                                  borderRadius: const BorderRadius.vertical(
-                                      top: Radius.circular(20))),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                                  color: AppColors.primaryAccent,
+                                  borderRadius: BorderRadius.circular(20)),
+                              child: const Row(
                                 children: [
-                                  Text("FLUTTER CODE",
-                                      style: GoogleFonts.firaCode(
-                                          color: Colors.greenAccent,
-                                          fontWeight: FontWeight.bold)),
-                                  InkWell(
-                                    onTap: () {
-                                      Clipboard.setData(
-                                          ClipboardData(text: _codePart));
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(const SnackBar(
-                                              content:
-                                                  Text("Code Copied! 🚀")));
-                                    },
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 10, vertical: 5),
-                                      decoration: BoxDecoration(
-                                          color: AppColors.primaryAccent,
-                                          borderRadius:
-                                              BorderRadius.circular(5)),
-                                      child: const Row(children: [
-                                        Icon(Icons.copy,
-                                            color: Colors.black, size: 14),
-                                        SizedBox(width: 5),
-                                        Text("COPY",
-                                            style: TextStyle(
-                                                color: Colors.black,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 12))
-                                      ]),
-                                    ),
-                                  )
+                                  Icon(Icons.copy_all,
+                                      size: 16, color: Colors.black),
+                                  SizedBox(width: 5),
+                                  Text("COPY",
+                                      style: TextStyle(
+                                          color: Colors.black,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 12))
                                 ],
                               ),
                             ),
-                            const Divider(height: 1, color: Colors.grey),
-                            Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: Text(_codePart,
-                                  style: GoogleFonts.firaCode(
-                                      color: const Color(0xFFCCFF00),
-                                      fontSize: 12,
-                                      height: 1.4)),
-                            ),
-                          ],
+                          )
+                        ],
+                      ),
+                    ),
+                    // Code Body
+                    Expanded(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(16),
+                        child: Text(
+                          _generatedCode,
+                          style: GoogleFonts.firaCode(
+                              color: const Color(0xFFA6E22E), // Monokai Green
+                              fontSize: 13,
+                              height: 1.4),
                         ),
                       ),
+                    ),
                   ],
                 ),
               ),
@@ -1207,88 +1278,177 @@ class _UIToCodeScreenState extends State<UIToCodeScreen> {
     );
   }
 
+  Color _getLangColor() {
+    if (_selectedLanguage.contains("Flutter")) return Colors.blue;
+    if (_selectedLanguage.contains("React")) return Colors.cyan;
+    if (_selectedLanguage.contains("HTML")) return Colors.orange;
+    return AppColors.primaryAccent;
+  }
+
   Widget _buildImageSection() {
+    bool hasImage = _image != null;
+
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
         color: AppColors.cardSurface,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-            color: _image != null
-                ? AppColors.primaryAccent
-                : AppColors.borderSubtle),
+            color: hasImage ? AppColors.primaryAccent : AppColors.borderSubtle,
+            width: hasImage ? 2 : 1),
       ),
-      child: _image == null
-          ? Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.cloud_upload_rounded,
-                    size: 60, color: Colors.grey),
-                const SizedBox(height: 10),
-                Text("Upload UI Screenshot",
-                    style: GoogleFonts.outfit(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold)),
-                const SizedBox(height: 20),
-                Row(
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(18),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            if (hasImage)
+              Image.file(_image!, fit: BoxFit.contain)
+            else
+              _buildUploadPlaceholder(),
+
+            // ✨ LASER SCANNER ANIMATION
+            if (_isScanning)
+              AnimatedBuilder(
+                animation: _scanController,
+                builder: (context, child) {
+                  return FractionallySizedBox(
+                    heightFactor: 0.05, // Laser Height
+                    alignment: Alignment(
+                        0, _scanController.value * 2 - 1), // Move Top to Bottom
+                    child: Container(
+                      decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              AppColors.primaryAccent.withOpacity(0),
+                              AppColors.primaryAccent, // Bright Green Center
+                              AppColors.primaryAccent.withOpacity(0),
+                            ],
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                                color: AppColors.primaryAccent,
+                                blurRadius: 10,
+                                spreadRadius: 1)
+                          ]),
+                    ),
+                  );
+                },
+              ),
+
+            // BUTTONS
+            if (!hasImage)
+              Positioned(
+                bottom: 25,
+                left: 0,
+                right: 0,
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    _actionBtn("Camera", Icons.camera_alt,
+                    _uploadBtn("Camera", Icons.camera_alt,
                         () => _pickImage(ImageSource.camera)),
-                    const SizedBox(width: 15),
-                    _actionBtn("Gallery", Icons.photo_library,
+                    const SizedBox(width: 20),
+                    _uploadBtn("Gallery", Icons.photo_library,
                         () => _pickImage(ImageSource.gallery)),
                   ],
-                )
-              ],
-            )
-          : Stack(
-              fit: StackFit.expand,
-              children: [
-                ClipRRect(
-                    borderRadius: BorderRadius.circular(18),
-                    child: Image.file(_image!, fit: BoxFit.contain)),
-                Positioned(
-                  bottom: 20,
-                  right: 20,
-                  left: 20,
-                  child: ElevatedButton(
-                    onPressed: _generateCode,
-                    style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primaryAccent,
-                        padding: const EdgeInsets.all(15)),
-                    child: Text("GENERATE CODE",
-                        style: GoogleFonts.outfit(
-                            color: Colors.black, fontWeight: FontWeight.bold)),
+                ),
+              ),
+
+            // MAIN GENERATE BUTTON
+            if (hasImage && !_loading)
+              Positioned(
+                bottom: 25,
+                left: 40,
+                right: 40,
+                child: ElevatedButton(
+                  onPressed: _showLanguageSelector,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryAccent,
+                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30)),
+                    elevation: 10,
+                    shadowColor: AppColors.primaryAccent.withOpacity(0.6),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.auto_awesome, color: Colors.black),
+                      const SizedBox(width: 10),
+                      Text("GENERATE FULL CODE",
+                          style: GoogleFonts.inter(
+                              color: Colors.black,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w900)),
+                    ],
                   ),
                 ),
-                Positioned(
-                  top: 10,
-                  right: 10,
+              ),
+
+            // CANCEL BUTTON
+            if (hasImage && !_loading)
+              Positioned(
+                top: 15,
+                right: 15,
+                child: CircleAvatar(
+                  backgroundColor: Colors.black87,
                   child: IconButton(
-                    onPressed: () => setState(() => _image = null),
-                    style: IconButton.styleFrom(backgroundColor: Colors.red),
                     icon: const Icon(Icons.close, color: Colors.white),
+                    onPressed: () => setState(() => _image = null),
                   ),
-                )
-              ],
-            ),
+                ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 
-  Widget _actionBtn(String label, IconData icon, VoidCallback onTap) {
-    return ElevatedButton.icon(
-      onPressed: onTap,
-      icon: Icon(icon, size: 18),
-      label: Text(label),
-      style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.cardSurface,
-          foregroundColor: Colors.white,
-          side: const BorderSide(color: AppColors.primaryAccent),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))),
+  Widget _buildUploadPlaceholder() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(Icons.add_photo_alternate_rounded,
+            size: 70, color: AppColors.textSecondary.withOpacity(0.3)),
+        const SizedBox(height: 20),
+        Text("Upload UI Design",
+            style: GoogleFonts.inter(
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
+                color: Colors.white)),
+        const SizedBox(height: 8),
+        Text("Supports: Flutter, React, HTML, Python",
+            style: GoogleFonts.inter(
+                fontSize: 13, color: AppColors.textSecondary)),
+      ],
+    );
+  }
+
+  Widget _uploadBtn(String text, IconData icon, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(30),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+        decoration: BoxDecoration(
+            color: AppColors.backgroundDark,
+            borderRadius: BorderRadius.circular(30),
+            border: Border.all(color: AppColors.borderSubtle),
+            boxShadow: [
+              BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 5)
+            ]),
+        child: Row(
+          children: [
+            Icon(icon, size: 20, color: AppColors.primaryAccent),
+            const SizedBox(width: 10),
+            Text(text,
+                style: const TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.w600)),
+          ],
+        ),
+      ),
     );
   }
 }

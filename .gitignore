@@ -1,15 +1,35 @@
-# Flutter/Dart
+
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog/
+.history
+.svn/
+# IntelliJ
+.idea/
+.idea/modules.xml
+.idea/workspace.xml
+.idea/libraries/
+*.iws
+# Visual Studio Code
+.vscode/
+# Flutter/Dart/Pub
 .dart_tool/
-.flutter-plugins
-.flutter-plugins-dependencies
 .packages
 .pub-cache/
-.pub/
 build/
-
-# IDEs
-.idea/
-.vscode/
-
-# Secrets
-lib/config.dart
+# Android
+.gradle
+**/local.properties
+**/key.properties
+# iOS
+.symlinks/
+/ios/Pods/
+/ios/Flutter/App.framework
+/ios/Flutter/Flutter.framework
+# Web
+/web/
