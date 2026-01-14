@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
 
 // ✅ FIREBASE
 import 'package:firebase_core/firebase_core.dart';
@@ -260,7 +261,7 @@ class _MainLayoutState extends State<MainLayout> {
           const SizedBox(width: 10),
           Text(_isDevMode ? "Developer Mode" : "Netra Vision Mode",
               style: GoogleFonts.outfit(
-                  fontSize: 14,
+                  fontSize: 16,
                   fontWeight: FontWeight.w700,
                   color: Colors.white)),
         ],
@@ -299,7 +300,7 @@ class SidebarContent extends StatelessWidget {
               const SizedBox(width: 10),
               Text("CodeNetra",
                   style: GoogleFonts.outfit(
-                      fontSize: 24, fontWeight: FontWeight.w800)),
+                      fontSize: 26, fontWeight: FontWeight.w800)),
             ],
           ),
           const SizedBox(height: 30),
@@ -371,7 +372,8 @@ class SidebarContent extends StatelessWidget {
               Text(text,
                   style: TextStyle(
                       color: isActive ? Colors.black : AppColors.textSecondary,
-                      fontWeight: FontWeight.w700)),
+                      fontWeight: FontWeight.w700,
+                      fontSize: 16)),
             ],
           ),
         ),
@@ -384,7 +386,7 @@ class SidebarContent extends StatelessWidget {
       child: Text(text,
           style: GoogleFonts.inter(
               color: AppColors.textSecondary,
-              fontSize: 11,
+              fontSize: 12,
               fontWeight: FontWeight.w800,
               letterSpacing: 1)));
 
@@ -407,7 +409,8 @@ class SidebarContent extends StatelessWidget {
                 color: isSelected
                     ? AppColors.textPrimary
                     : AppColors.textSecondary,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500)),
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                fontSize: 16)),
         dense: true,
       ),
     );
@@ -439,11 +442,11 @@ class _RepoChatScreenState extends State<RepoChatScreen>
 
   // Suggestions
   final List<String> _suggestions = [
-    "📂 Full File Structure",
-    "🚀 Explain main.dart logic",
-    "📦 Analyze pubspec.yaml",
-    "🔐 Find API Key leaks",
-    "🐛 Check for bugs",
+    "Full File Structure",
+    "Explain main.dart logic",
+    "Analyze pubspec.yaml",
+    "Find API Key leaks",
+    "Check for bugs",
   ];
 
   @override
@@ -451,46 +454,59 @@ class _RepoChatScreenState extends State<RepoChatScreen>
     super.initState();
     _brain.initBrain();
     _addMessage("ai",
-        "Hello Developer! 👨‍💻\n\nI am ready for **Universal Code Analysis**.\nUse the **+** button to upload a ZIP or link a GitHub Repo for deep scanning.");
+        "Hello Developer! I am ready for Universal Code Analysis. Use the + button to upload a ZIP or link a GitHub Repo for deep scanning.");
   }
 
-  // 🔥 1. UPDATED GITHUB LOGIC (Deep Search Simulation)
-  void _processGitHubLink(String url) async {
+  // 🔥 1. UPDATED GITHUB LOGIC (Real ZIP Download)
+  Future<void> _processGitHubLink(String url) async {
     if (url.isEmpty) return;
     setState(() {
       _isLoading = true;
       _activeFileName = "GitHub Repo (Deep Scan)";
     });
 
-    // Simulate "Deep Research" delay
-    await Future.delayed(const Duration(seconds: 3));
+    try {
+      // Convert to ZIP URL (e.g., https://github.com/user/repo/archive/refs/heads/main.zip)
+      String zipUrl = url.endsWith('.git') ? url.substring(0, url.length - 4) : url;
+      if (!zipUrl.endsWith('/')) zipUrl += '/';
+      zipUrl += 'archive/refs/heads/main.zip';
 
-    // MOCKING A DEEP SCAN (Since we can't actually scrape without backend)
-    String mockContext = """
-    [SYSTEM: GITHUB REPO SCANNED]
-    Repo URL: $url
-    Note: Real-time scraping requires backend. 
-    Simulating analysis of common Flutter structure...
-    
-    DETECTED FILES:
-    - lib/main.dart
-    - pubspec.yaml
-    - lib/screens/home.dart
-    - lib/utils/constants.dart
-    
-    (AI Instructions: Assume standard Flutter structure for this repo. If user asks for specific file code, ask them to confirm the file path or provide the specific code block if known standard boilerplate.)
-    """;
+      final response = await http.get(Uri.parse(zipUrl));
+      if (response.statusCode == 200) {
+        final bytes = response.bodyBytes;
+        final archive = ZipDecoder().decodeBytes(bytes);
+        StringBuffer extractedCode = StringBuffer();
+        List<String> fileList = [];
 
-    setState(() {
-      _codebaseContext = mockContext;
-      _isContextLoaded = true;
-      _isLoading = false;
-      _addMessage("system",
-          "✅ **GitHub Repo Indexed!**\nDeep analysis complete. I have scanned the structure. Ask me about specific files or bugs.");
-    });
+        for (final file in archive) {
+          if (file.isFile && !file.name.contains("__MACOSX")) {
+            fileList.add(file.name);
+            String content = String.fromCharCodes(file.content as List<int>);
+            if (content.length < 100000) {
+              extractedCode.writeln("\n--- FILE: ${file.name} ---\n$content\n");
+            } else {
+              extractedCode.writeln("\n--- FILE: ${file.name} (TRUNCATED) ---\n${content.substring(0, 100000)}...\n");
+            }
+          }
+        }
+
+        setState(() {
+          _codebaseContext = extractedCode.toString();
+          _isContextLoaded = true;
+          _addMessage("system",
+              "Active GitHub Repo. Deep analysis complete. I have scanned the structure and files. Files found: ${fileList.length}. Ask me about specific files or bugs.");
+        });
+      } else {
+        _addMessage("system", "Failed to download repo ZIP. Check URL.");
+      }
+    } catch (e) {
+      _addMessage("system", "Error processing GitHub: $e");
+    }
+
+    setState(() => _isLoading = false);
   }
 
-  // 🔥 2. ZIP LOGIC (Extracts & Stores Context for File Retrieval)
+  // 🔥 2. ZIP LOGIC (Extracts All Files, Increased Limit)
   Future<void> _pickZipFile() async {
     try {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
@@ -512,20 +528,14 @@ class _RepoChatScreenState extends State<RepoChatScreen>
         StringBuffer extractedCode = StringBuffer();
         List<String> fileList = [];
 
-        // Smart Extraction
         for (final file in archive) {
           if (file.isFile && !file.name.contains("__MACOSX")) {
             fileList.add(file.name);
-            // Limit size to prevent memory crash, but prioritize code files
-            if (file.name.endsWith('.dart') ||
-                file.name.endsWith('.js') ||
-                file.name.endsWith('.json') ||
-                file.name.endsWith('.yaml')) {
-              String content = String.fromCharCodes(file.content);
-              if (content.length < 50000) {
-                extractedCode
-                    .writeln("\n--- FILE: ${file.name} ---\n$content\n");
-              }
+            String content = String.fromCharCodes(file.content as List<int>);
+            if (content.length < 100000) {
+              extractedCode.writeln("\n--- FILE: ${file.name} ---\n$content\n");
+            } else {
+              extractedCode.writeln("\n--- FILE: ${file.name} (TRUNCATED) ---\n${content.substring(0, 100000)}...\n");
             }
           }
         }
@@ -535,12 +545,12 @@ class _RepoChatScreenState extends State<RepoChatScreen>
           _isContextLoaded = true;
           _isLoading = false;
           _addMessage("system",
-              "✅ **ZIP Analysis Complete!**\n📂 Files Found: ${fileList.length}\n🧠 Logic: Indexed for Code Retrieval.\n\nYou can now ask: 'Show me code for main.dart'");
+              "ZIP Analysis Complete. Files Found: ${fileList.length}. Logic: Indexed for Code Retrieval. You can now ask: Show me code for main.dart");
         });
       }
     } catch (e) {
       setState(() => _isLoading = false);
-      _addMessage("system", "❌ Error: $e");
+      _addMessage("system", "Error: $e");
     }
   }
 
@@ -562,7 +572,7 @@ class _RepoChatScreenState extends State<RepoChatScreen>
             Text("Select Source",
                 style: GoogleFonts.outfit(
                     color: Colors.white,
-                    fontSize: 20,
+                    fontSize: 22,
                     fontWeight: FontWeight.bold)),
             const SizedBox(height: 20),
             Row(
@@ -595,13 +605,13 @@ class _RepoChatScreenState extends State<RepoChatScreen>
         title: Row(children: const [
           Icon(Icons.hub, color: Colors.purple),
           SizedBox(width: 10),
-          Text("GitHub Deep Scan", style: TextStyle(color: Colors.white))
+          Text("GitHub Deep Scan", style: TextStyle(color: Colors.white, fontSize: 18))
         ]),
         content: TextField(
           controller: urlCtrl,
-          style: const TextStyle(color: Colors.white),
+          style: const TextStyle(color: Colors.white, fontSize: 16),
           decoration: InputDecoration(
-              hintText: "Paste Repo URL (https://github.com/...)",
+              hintText: "Paste Repo URL[](https://github.com/...)",
               hintStyle: TextStyle(color: Colors.grey.shade600),
               filled: true,
               fillColor: Colors.black,
@@ -647,7 +657,7 @@ class _RepoChatScreenState extends State<RepoChatScreen>
               const SizedBox(height: 10),
               Text(label,
                   style: GoogleFonts.outfit(
-                      color: Colors.white, fontWeight: FontWeight.w600))
+                      color: Colors.white, fontWeight: FontWeight.w600, fontSize: 16))
             ],
           ),
         ),
@@ -662,7 +672,6 @@ class _RepoChatScreenState extends State<RepoChatScreen>
     setState(() => _isLoading = true);
 
     String fullPrompt = text;
-    // 🔥 PASSING FULL CONTEXT SO AI CAN RETRIEVE SPECIFIC FILES
     if (_isContextLoaded && _codebaseContext.isNotEmpty) {
       fullPrompt = """
       CONTEXT (Full Codebase/Scan):
@@ -671,7 +680,7 @@ class _RepoChatScreenState extends State<RepoChatScreen>
       USER QUESTION: $text
       
       INSTRUCTIONS:
-      1. If user asks for a specific file (e.g., "Show me main.dart"), SEARCH the context and return the EXACT code in a code block.
+      1. If user asks for a specific file (e.g., Show me main.dart), SEARCH the context and return the EXACT code in a code block.
       2. If code is requested, do not summarize. Give the full code.
       3. Use colorful formatting logic (Language name at start of block).
       """;
@@ -715,11 +724,12 @@ class _RepoChatScreenState extends State<RepoChatScreen>
                   const SizedBox(width: 8),
                   Text("Active: $_activeFileName",
                       style: const TextStyle(
-                          color: Colors.green, fontWeight: FontWeight.bold))
+                          color: Colors.green, fontWeight: FontWeight.bold, fontSize: 16))
                 ])),
           Expanded(
             child: ListView.builder(
               controller: _scrollController,
+              physics: const ClampingScrollPhysics(), // For smooth scrolling, no fluctuate
               padding: const EdgeInsets.all(16),
               itemCount: _msgs.length,
               itemBuilder: (c, i) => ModernChatBubble(
@@ -747,7 +757,7 @@ class _RepoChatScreenState extends State<RepoChatScreen>
                   side: const BorderSide(color: AppColors.borderSubtle),
                   label: Text(_suggestions[index],
                       style: const TextStyle(
-                          color: Colors.white, fontWeight: FontWeight.w500)),
+                          color: Colors.white, fontWeight: FontWeight.w500, fontSize: 16)),
                   onPressed: () => _send(_suggestions[index]),
                 );
               },
@@ -765,7 +775,7 @@ class _RepoChatScreenState extends State<RepoChatScreen>
                   Expanded(
                       child: TextField(
                           controller: _ctrl,
-                          style: GoogleFonts.outfit(color: Colors.white),
+                          style: GoogleFonts.outfit(color: Colors.white, fontSize: 16),
                           decoration: const InputDecoration(
                               hintText: "Ask about logic or request files...",
                               border: InputBorder.none,
@@ -787,7 +797,7 @@ class _RepoChatScreenState extends State<RepoChatScreen>
 }
 
 // =============================================================================
-// 🔥 5. UI TO CODE SCREEN (PIXEL PERFECT + REGEX CLEANER + SCANNER)
+// 🔥 5. UI TO CODE SCREEN (PIXEL PERFECT + REGEX CLEANER + JARVIS SCANNER)
 // =============================================================================
 
 class UIToCodeScreen extends StatefulWidget {
@@ -805,6 +815,7 @@ class _UIToCodeScreenState extends State<UIToCodeScreen>
   String _generatedCode = "";
 
   late AnimationController _scanController;
+  late Animation<double> _textAnim;
   final AIBrain _brain = AIBrain();
 
   @override
@@ -814,6 +825,7 @@ class _UIToCodeScreenState extends State<UIToCodeScreen>
     _scanController =
         AnimationController(vsync: this, duration: const Duration(seconds: 2))
           ..repeat(reverse: true);
+    _textAnim = Tween<double>(begin: 0.5, end: 1.0).animate(_scanController);
   }
 
   @override
@@ -846,7 +858,7 @@ class _UIToCodeScreenState extends State<UIToCodeScreen>
           children: [
             Text("Select Output Language",
                 style: GoogleFonts.outfit(
-                    fontSize: 20,
+                    fontSize: 22,
                     color: Colors.white,
                     fontWeight: FontWeight.bold)),
             const SizedBox(height: 20),
@@ -864,8 +876,8 @@ class _UIToCodeScreenState extends State<UIToCodeScreen>
 
   Widget _langChip(String label, IconData icon) {
     return ActionChip(
-      avatar: Icon(icon, size: 16),
-      label: Text(label),
+      avatar: Icon(icon, size: 18),
+      label: Text(label, style: const TextStyle(fontSize: 16)),
       backgroundColor: AppColors.primaryAccent,
       onPressed: () {
         Navigator.pop(context);
@@ -882,7 +894,6 @@ class _UIToCodeScreenState extends State<UIToCodeScreen>
       _generatedCode = "";
     });
 
-    // 🔥 STRICT PROMPT FOR HU-BAHU UI
     String prompt = """
     You are an Expert UI Developer.
     TASK: Convert this UI screenshot to $_selectedLanguage.
@@ -901,7 +912,6 @@ class _UIToCodeScreenState extends State<UIToCodeScreen>
       _isScanning = false;
 
       if (result != null) {
-        // 🔥 REGEX TO CLEAN "HERE IS YOUR CODE" TEXT
         final codeBlockRegex = RegExp(r'```(?:\w+)?\s*(.*?)```', dotAll: true);
         final match = codeBlockRegex.firstMatch(result);
         if (match != null) {
@@ -925,21 +935,20 @@ class _UIToCodeScreenState extends State<UIToCodeScreen>
             child: _buildImageSection(),
           ),
 
-          // 🔥 FEATURE CARDS (Only when no code)
-          if (_generatedCode.isEmpty && !_loading)
-            Padding(
-              padding: const EdgeInsets.only(top: 20),
-              child: Row(
-                children: [
-                  Expanded(
-                      child: _featureCard("Pixel Perfect", Icons.check_circle)),
-                  const SizedBox(width: 10),
-                  Expanded(child: _featureCard("Neon/Glass", Icons.blur_on)),
-                  const SizedBox(width: 10),
-                  Expanded(child: _featureCard("Full Source", Icons.code)),
-                ],
-              ),
+          // 🔥 FEATURE CARDS (Always show for professional look)
+          Padding(
+            padding: const EdgeInsets.only(top: 20),
+            child: Row(
+              children: [
+                Expanded(
+                    child: _featureCard("Pixel Perfect", Icons.check_circle)),
+                const SizedBox(width: 10),
+                Expanded(child: _featureCard("Neon/Glass", Icons.blur_on)),
+                const SizedBox(width: 10),
+                Expanded(child: _featureCard("Full Source", Icons.code)),
+              ],
             ),
+          ),
 
           if (_loading)
             Padding(
@@ -951,7 +960,7 @@ class _UIToCodeScreenState extends State<UIToCodeScreen>
                     const SizedBox(height: 10),
                     Text("Extracting Styles & Components...",
                         style: GoogleFonts.firaCode(
-                            color: AppColors.primaryAccent, fontSize: 12))
+                            color: AppColors.primaryAccent, fontSize: 14))
                   ],
                 )),
 
@@ -977,12 +986,12 @@ class _UIToCodeScreenState extends State<UIToCodeScreen>
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Row(children: [
-                              Icon(Icons.code, color: Colors.blue, size: 16),
+                              Icon(Icons.code, color: Colors.blue, size: 18),
                               const SizedBox(width: 8),
                               Text("$_selectedLanguage Output",
                                   style: const TextStyle(
                                       color: Colors.white,
-                                      fontWeight: FontWeight.bold)),
+                                      fontWeight: FontWeight.bold, fontSize: 16)),
                             ]),
                             InkWell(
                                 onTap: () {
@@ -990,7 +999,7 @@ class _UIToCodeScreenState extends State<UIToCodeScreen>
                                       ClipboardData(text: _generatedCode));
                                   ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
-                                          content: Text("✅ Code Copied!")));
+                                          content: Text("Code Copied!")));
                                 },
                                 child: const Icon(Icons.copy,
                                     color: Colors.white, size: 18))
@@ -1003,7 +1012,7 @@ class _UIToCodeScreenState extends State<UIToCodeScreen>
                           CodeHighlighter.highlight(
                               _generatedCode), // VS CODE COLORS
                           style:
-                              GoogleFonts.firaCode(fontSize: 12, height: 1.5),
+                              GoogleFonts.firaCode(fontSize: 14, height: 1.5),
                         ),
                       ),
                     ),
@@ -1024,11 +1033,11 @@ class _UIToCodeScreenState extends State<UIToCodeScreen>
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: AppColors.borderSubtle)),
       child: Column(children: [
-        Icon(icon, color: Colors.grey, size: 20),
+        Icon(icon, color: Colors.grey, size: 22),
         const SizedBox(height: 5),
         Text(text,
             style: const TextStyle(
-                color: Colors.grey, fontSize: 10, fontWeight: FontWeight.bold))
+                color: Colors.grey, fontSize: 12, fontWeight: FontWeight.bold))
       ]),
     );
   }
@@ -1054,7 +1063,7 @@ class _UIToCodeScreenState extends State<UIToCodeScreen>
             else
               _buildPlaceholder(),
 
-            // 🔥 LASER SCANNER ANIMATION
+            // 🔥 JARVIS LASER SCANNER ANIMATION
             if (_isScanning)
               AnimatedBuilder(
                 animation: _scanController,
@@ -1073,6 +1082,19 @@ class _UIToCodeScreenState extends State<UIToCodeScreen>
                               color: AppColors.primaryAccent, blurRadius: 15)
                         ]),
                   ),
+                ),
+              ),
+
+            // 🔥 JARVIS TEXT ANIMATION
+            if (_isScanning)
+              Center(
+                child: FadeTransition(
+                  opacity: _textAnim,
+                  child: Text("Jarvis Scanning UI...",
+                      style: GoogleFonts.outfit(
+                          color: AppColors.primaryAccent.withOpacity(0.8),
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold)),
                 ),
               ),
 
@@ -1107,7 +1129,7 @@ class _UIToCodeScreenState extends State<UIToCodeScreen>
                       padding: const EdgeInsets.symmetric(vertical: 15)),
                   child: const Text("GENERATE CODE",
                       style: TextStyle(
-                          color: Colors.black, fontWeight: FontWeight.bold)),
+                          color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16)),
                 ),
               ),
 
@@ -1132,7 +1154,7 @@ class _UIToCodeScreenState extends State<UIToCodeScreen>
       const SizedBox(height: 15),
       Text("Upload UI Screenshot",
           style: GoogleFonts.outfit(
-              fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold)),
+              fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold)),
     ]);
   }
 }
@@ -1158,13 +1180,14 @@ class HomeScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text("Welcome Back,",
+                Text("Welcome Back, ${isDevMode ? 'Developer' : 'Netra User'}",
                     style: GoogleFonts.outfit(
-                        fontSize: 28, fontWeight: FontWeight.bold)),
+                        fontSize: 30, fontWeight: FontWeight.bold)),
                 Text("Netra AI v2.0 Online",
                     style: GoogleFonts.inter(
                         color: AppColors.primaryAccent,
-                        fontWeight: FontWeight.w600)),
+                        fontWeight: FontWeight.w600,
+                        fontSize: 18)),
               ]),
               const CircleAvatar(
                   backgroundColor: AppColors.cardSurface,
@@ -1183,13 +1206,23 @@ class HomeScreen extends StatelessWidget {
           const SizedBox(height: 20),
           Row(
             children: [
-              Expanded(
-                  child: _smallCard("UI to Code", Icons.image, Colors.blue,
-                      () => onNavigate(4))),
-              const SizedBox(width: 15),
-              Expanded(
-                  child: _smallCard(
-                      "Voice AI", Icons.mic, Colors.pink, () => onNavigate(6))),
+              if (isDevMode) ...[
+                Expanded(
+                    child: _smallCard("UI to Code", Icons.image, Colors.blue,
+                        () => onNavigate(4))),
+                const SizedBox(width: 15),
+                Expanded(
+                    child: _smallCard("Error Debugger", Icons.bug_report,
+                        Colors.red, () => onNavigate(3))),
+              ] else ...[
+                Expanded(
+                    child: _smallCard("Voice AI", Icons.mic, Colors.pink,
+                        () => onNavigate(6))),
+                const SizedBox(width: 15),
+                Expanded(
+                    child: _smallCard("PDF Intelligence",
+                        Icons.picture_as_pdf, Colors.orange, () => onNavigate(5))),
+              ],
             ],
           )
         ],
@@ -1227,12 +1260,12 @@ class HomeScreen extends StatelessWidget {
                     const SizedBox(height: 12),
                     Text(title,
                         style: GoogleFonts.outfit(
-                            fontSize: 22,
+                            fontSize: 24,
                             fontWeight: FontWeight.bold,
                             color: Colors.black)),
                     Text(subtitle,
                         style: GoogleFonts.inter(
-                            fontSize: 14,
+                            fontSize: 16,
                             color: Colors.black87,
                             fontWeight: FontWeight.w500)),
                   ]),
@@ -1265,7 +1298,7 @@ class HomeScreen extends StatelessWidget {
           const SizedBox(height: 15),
           Text(title,
               style:
-                  GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold))
+                  GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold))
         ]),
       ),
     );
@@ -1328,7 +1361,7 @@ class _LiveCameraScreenState extends State<LiveCameraScreen> {
               const SizedBox(height: 10),
               Text(_desc,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.white)),
+                  style: const TextStyle(color: Colors.white, fontSize: 18)),
               const SizedBox(height: 20),
               FloatingActionButton(
                   onPressed: _analyzeScene,
@@ -1388,6 +1421,7 @@ class _ErrorFixerScreenState extends State<ErrorFixerScreen> {
                     controller: _ctrl,
                     maxLines: null,
                     expands: true,
+                    style: const TextStyle(fontSize: 16),
                     decoration: const InputDecoration(
                         hintText: "Paste Error Log...",
                         contentPadding: EdgeInsets.all(16),
@@ -1406,7 +1440,7 @@ class _ErrorFixerScreenState extends State<ErrorFixerScreen> {
             child: ProCard(
                 child: SingleChildScrollView(
                     child: Text(_solution,
-                        style: const TextStyle(color: Colors.white)))))
+                        style: const TextStyle(color: Colors.white, fontSize: 16)))))
       ]),
     );
   }
@@ -1468,7 +1502,7 @@ class _VoiceScreenState extends State<VoiceScreen> {
             color: _isListening ? Colors.red : AppColors.primaryAccent),
         const SizedBox(height: 30),
         Text(_text,
-            textAlign: TextAlign.center, style: const TextStyle(fontSize: 18)),
+            textAlign: TextAlign.center, style: const TextStyle(fontSize: 20)),
         const SizedBox(height: 40),
         FloatingActionButton(
             onPressed: _listen,
@@ -1524,14 +1558,14 @@ class _CodeExpertScreenState extends State<CodeExpertScreen> {
                                 horizontal: 10, vertical: 2),
                             child: Text(_logs[i],
                                 style: GoogleFonts.firaCode(
-                                    fontSize: 12,
+                                    fontSize: 14,
                                     color: Colors.greenAccent)))))),
             Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10),
                 color: Colors.black,
                 child: TextField(
                     controller: _ctrl,
-                    style: const TextStyle(color: Colors.white),
+                    style: const TextStyle(color: Colors.white, fontSize: 16),
                     onSubmitted: (_) => _run(),
                     decoration: const InputDecoration(
                         prefixText: "> ", border: InputBorder.none)))
@@ -1613,7 +1647,7 @@ class ProPageLayout extends StatelessWidget {
             const SizedBox(width: 12),
             Text(title,
                 style: GoogleFonts.outfit(
-                    fontSize: 26, fontWeight: FontWeight.bold))
+                    fontSize: 28, fontWeight: FontWeight.bold))
           ]),
           const SizedBox(height: 24),
           Expanded(child: child)
@@ -1669,12 +1703,12 @@ class ModernChatBubble extends StatelessWidget {
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           if (isUser)
             Text(text,
-                style: const TextStyle(
-                    color: Colors.black, fontWeight: FontWeight.bold))
+                style: GoogleFonts.outfit(
+                    color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16))
           else
             ...parts.map((part) {
               if (parts.indexOf(part) % 2 == 0)
-                return Text(part, style: const TextStyle(color: Colors.white));
+                return Text(part, style: GoogleFonts.outfit(color: Colors.white, fontSize: 16));
               else
                 return Container(
                     width: double.infinity,
@@ -1686,7 +1720,7 @@ class ModernChatBubble extends StatelessWidget {
                         border: Border.all(color: Colors.grey.shade800)),
                     child: SelectableText.rich(
                         CodeHighlighter.highlight(part.trim()),
-                        style: GoogleFonts.firaCode(fontSize: 12)));
+                        style: GoogleFonts.firaCode(fontSize: 14)));
             })
         ]),
       ),
