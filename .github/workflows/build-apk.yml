@@ -1,0 +1,58 @@
+
+name: Build Flutter APK (release)
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 'stable'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Accept Android SDK licenses
+        run: |
+          yes | sdkmanager --licenses || true
+
+      - name: Build release APK
+        run: flutter build apk --release --no-shrink
+
+      - name: Upload APK (artifact)
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+
+      - name: Copy APK to repository root and push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          APK_SRC=build/app/outputs/flutter-apk/app-release.apk
+          if [ -f "$APK_SRC" ]; then
+            cp "$APK_SRC" "$GITHUB_WORKSPACE/app-release.apk"
+            git config user.name "github-actions"
+            git config user.email "actions@github.com"
+            git add app-release.apk || true
+            git commit -m "chore: add app-release.apk [skip ci]" || echo "no changes to commit"
+            git push origin HEAD:main || echo "push failed"
+          else
+            echo "APK not found at $APK_SRC"
+            exit 1
+          fi
