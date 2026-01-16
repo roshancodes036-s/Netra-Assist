@@ -22,7 +22,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:permission_handler/permission_handler.dart';
 
-// ✅ BRAIN
+// ✅ BRAIN (External File)
 import 'ai_logic.dart';
 
 // =============================================================================
@@ -418,7 +418,7 @@ class SidebarContent extends StatelessWidget {
 }
 
 // =============================================================================
-// 🔥 4. REPO CHAT SCREEN (IMPROVED ICONS + DEEP SEARCH + FILE FETCHING)
+// 🔥 4. REPO CHAT SCREEN (SMART ZIP ANALYSIS)
 // =============================================================================
 
 class RepoChatScreen extends StatefulWidget {
@@ -435,18 +435,22 @@ class _RepoChatScreenState extends State<RepoChatScreen>
 
   bool _isLoading = false;
   String? _activeFileName;
-  String _codebaseContext = ""; // Stores full ZIP content
+
+  // 🔥 SMART CONTEXT VARIABLES
+  Map<String, String> _fileContentMap = {}; // Saari files ka code yahan rahega
+  List<String> _allFilePaths = []; // Sirf file ke naam structure ke liye
+  String _criticalContext =
+      ""; // Top 5-6 files ka data jo AI ko pehle bhejna hai
   bool _isContextLoaded = false;
 
   final AIBrain _brain = AIBrain();
 
-  // Suggestions
+  // Quick Action Chips
   final List<String> _suggestions = [
-    "Full File Structure",
-    "Explain main.dart logic",
-    "Analyze pubspec.yaml",
-    "Find API Key leaks",
-    "Check for bugs",
+    "📂 Show Project Structure",
+    "📝 List All Features",
+    "🐞 Find Bugs in main.dart",
+    "💻 Give full main.dart code",
   ];
 
   @override
@@ -454,235 +458,193 @@ class _RepoChatScreenState extends State<RepoChatScreen>
     super.initState();
     _brain.initBrain();
     _addMessage("ai",
-        "Hello Developer! I am ready for Universal Code Analysis. Use the + button to upload a ZIP or link a GitHub Repo for deep scanning.");
+        "Hello Developer! Upload a ZIP. I will auto-analyze the core files instantly.");
   }
 
-  // 🔥 1. UPDATED GITHUB LOGIC (Real ZIP Download)
-  Future<void> _processGitHubLink(String url) async {
-    if (url.isEmpty) return;
+  // 🔥 1. SMART ZIP PROCESSOR (The Magic Logic)
+  Future<void> _processZipFile(List<int> bytes, String filename) async {
     setState(() {
       _isLoading = true;
-      _activeFileName = "GitHub Repo (Deep Scan)";
+      _activeFileName = filename;
+      _fileContentMap.clear();
+      _allFilePaths.clear();
+      _criticalContext = "";
     });
 
     try {
-      // Convert to ZIP URL (e.g., https://github.com/user/repo/archive/refs/heads/main.zip)
-      String zipUrl = url.endsWith('.git') ? url.substring(0, url.length - 4) : url;
-      if (!zipUrl.endsWith('/')) zipUrl += '/';
-      zipUrl += 'archive/refs/heads/main.zip';
+      final archive = ZipDecoder().decodeBytes(bytes);
 
-      final response = await http.get(Uri.parse(zipUrl));
-      if (response.statusCode == 200) {
-        final bytes = response.bodyBytes;
-        final archive = ZipDecoder().decodeBytes(bytes);
-        StringBuffer extractedCode = StringBuffer();
-        List<String> fileList = [];
+      // A. Priority Files List (Jo pehle read karni hain)
+      final List<String> priorityFiles = [
+        'pubspec.yaml',
+        'main.dart',
+        'AndroidManifest.xml',
+        'Info.plist',
+        'package.json',
+        'index.js',
+        'app.py',
+        'requirements.txt',
+        'firebase_options.dart',
+        'routes.dart'
+      ];
 
-        for (final file in archive) {
-          if (file.isFile && !file.name.contains("__MACOSX")) {
-            fileList.add(file.name);
+      StringBuffer criticalBuffer = StringBuffer();
+      int totalFiles = 0;
+
+      // B. Filter & Read Loop
+      for (final file in archive) {
+        if (file.isFile) {
+          String path = file.name;
+
+          // 🚫 JUNK FILTER: Inhe ignore kro speed ke liye
+          if (path.contains('node_modules') ||
+              path.contains('.git/') ||
+              path.contains('build/') ||
+              path.contains('.idea/') ||
+              path.endsWith('.png') ||
+              path.endsWith('.jpg') ||
+              path.endsWith('.ttf')) {
+            continue;
+          }
+
+          _allFilePaths.add(path); // Structure ke liye path save kro
+          totalFiles++;
+
+          // File content read kro
+          try {
             String content = String.fromCharCodes(file.content as List<int>);
-            if (content.length < 100000) {
-              extractedCode.writeln("\n--- FILE: ${file.name} ---\n$content\n");
-            } else {
-              extractedCode.writeln("\n--- FILE: ${file.name} (TRUNCATED) ---\n${content.substring(0, 100000)}...\n");
+            _fileContentMap[path] = content; // Full map me save kro
+
+            // ✅ CRITICAL FILE CHECK (Sirf 5-6 important files dhundo)
+            // Agar file ka naam priority list me hai, ya wo 'lib/' folder me hai (top level)
+            bool isPriority = priorityFiles.any((p) => path.endsWith(p));
+
+            // Limit critical context to ~20kb to keep it fast initially
+            if (isPriority && criticalBuffer.length < 20000) {
+              criticalBuffer.writeln("\n--- FILE: $path ---\n$content\n");
             }
+          } catch (e) {
+            // Binary file skip
           }
         }
-
-        setState(() {
-          _codebaseContext = extractedCode.toString();
-          _isContextLoaded = true;
-          _addMessage("system",
-              "Active GitHub Repo. Deep analysis complete. I have scanned the structure and files. Files found: ${fileList.length}. Ask me about specific files or bugs.");
-        });
-      } else {
-        _addMessage("system", "Failed to download repo ZIP. Check URL.");
       }
-    } catch (e) {
-      _addMessage("system", "Error processing GitHub: $e");
-    }
 
-    setState(() => _isLoading = false);
-  }
+      _criticalContext = criticalBuffer.toString();
+      _isContextLoaded = true;
 
-  // 🔥 2. ZIP LOGIC (Extracts All Files, Increased Limit)
-  Future<void> _pickZipFile() async {
-    try {
-      FilePickerResult? result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['zip'],
-        withData: true,
-      );
+      // C. AI Auto-Summary Request
+      String summaryPrompt = """
+      ACT AS A SENIOR DEVELOPER.
+      I have uploaded a project ZIP.
+      
+      STATS:
+      - Total Files Scanned: $totalFiles
+      - Key Files Content Provided Below:
+      $_criticalContext
+      
+      TASK:
+      1. Identify the Tech Stack (Flutter/React/Python).
+      2. Analyze the 'pubspec.yaml' or dependency file to list Key Features.
+      3. Tell me the folder structure briefly.
+      
+      Reply in short bullet points. Start with "🚀 Project Loaded Successfully!".
+      """;
 
-      if (result != null) {
-        setState(() {
-          _isLoading = true;
-          _activeFileName = result.files.single.name;
-        });
-
-        List<int> bytes = kIsWeb
-            ? result.files.single.bytes!
-            : await File(result.files.single.path!).readAsBytes();
-        final archive = ZipDecoder().decodeBytes(bytes);
-        StringBuffer extractedCode = StringBuffer();
-        List<String> fileList = [];
-
-        for (final file in archive) {
-          if (file.isFile && !file.name.contains("__MACOSX")) {
-            fileList.add(file.name);
-            String content = String.fromCharCodes(file.content as List<int>);
-            if (content.length < 100000) {
-              extractedCode.writeln("\n--- FILE: ${file.name} ---\n$content\n");
-            } else {
-              extractedCode.writeln("\n--- FILE: ${file.name} (TRUNCATED) ---\n${content.substring(0, 100000)}...\n");
-            }
-          }
-        }
-
-        setState(() {
-          _codebaseContext = extractedCode.toString();
-          _isContextLoaded = true;
-          _isLoading = false;
-          _addMessage("system",
-              "ZIP Analysis Complete. Files Found: ${fileList.length}. Logic: Indexed for Code Retrieval. You can now ask: Show me code for main.dart");
-        });
-      }
+      String? res = await _brain.askLaravel(summaryPrompt);
+      setState(() => _isLoading = false);
+      _addMessage("ai", res ?? "Project Loaded. Ready to answer questions!");
     } catch (e) {
       setState(() => _isLoading = false);
-      _addMessage("system", "Error: $e");
+      _addMessage("system", "Error reading ZIP: $e");
     }
   }
 
-  void _showUploadMenu() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-            color: AppColors.cardSurface,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-            border: const Border(
-                top: BorderSide(color: AppColors.primaryAccent, width: 2))),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("Select Source",
-                style: GoogleFonts.outfit(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold)),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                _uploadOption(
-                    "Upload ZIP", Icons.folder_zip_rounded, Colors.orange, () {
-                  Navigator.pop(context);
-                  _pickZipFile();
-                }),
-                const SizedBox(width: 15),
-                _uploadOption("GitHub Repo", Icons.hub_rounded, Colors.purple,
-                    () {
-                  Navigator.pop(context);
-                  _showGitHubDialog();
-                }),
-              ],
-            )
-          ],
-        ),
-      ),
+  // File Picker Wrapper
+  Future<void> _pickZipFile() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['zip'],
+      withData: true,
     );
+
+    if (result != null) {
+      List<int> bytes = kIsWeb
+          ? result.files.single.bytes!
+          : await File(result.files.single.path!).readAsBytes();
+
+      _processZipFile(bytes, result.files.single.name);
+    }
   }
 
-  void _showGitHubDialog() {
-    TextEditingController urlCtrl = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (c) => AlertDialog(
-        backgroundColor: AppColors.cardSurface,
-        title: Row(children: const [
-          Icon(Icons.hub, color: Colors.purple),
-          SizedBox(width: 10),
-          Text("GitHub Deep Scan", style: TextStyle(color: Colors.white, fontSize: 18))
-        ]),
-        content: TextField(
-          controller: urlCtrl,
-          style: const TextStyle(color: Colors.white, fontSize: 16),
-          decoration: InputDecoration(
-              hintText: "Paste Repo URL[](https://github.com/...)",
-              hintStyle: TextStyle(color: Colors.grey.shade600),
-              filled: true,
-              fillColor: Colors.black,
-              border:
-                  OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
-        ),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(c), child: const Text("Cancel")),
-          ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.purple),
-              onPressed: () {
-                Navigator.pop(c);
-                _processGitHubLink(urlCtrl.text);
-              },
-              child: const Text("Scan Repo",
-                  style: TextStyle(color: Colors.white)))
-        ],
-      ),
-    );
-  }
-
-  Widget _uploadOption(
-      String label, IconData icon, Color color, VoidCallback onTap) {
-    return Expanded(
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 20),
-          decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: color.withOpacity(0.3))),
-          child: Column(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                    color: color.withOpacity(0.2), shape: BoxShape.circle),
-                child: Icon(icon, color: color, size: 28),
-              ),
-              const SizedBox(height: 10),
-              Text(label,
-                  style: GoogleFonts.outfit(
-                      color: Colors.white, fontWeight: FontWeight.w600, fontSize: 16))
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
+  // 🔥 2. SMART QUERY HANDLER
   void _send(String text) async {
     if (text.isEmpty) return;
     _ctrl.clear();
     _addMessage("user", text);
     setState(() => _isLoading = true);
 
-    String fullPrompt = text;
-    if (_isContextLoaded && _codebaseContext.isNotEmpty) {
+    String fullPrompt = "";
+
+    // SCENARIO 1: User asks for STRUCTURE
+    if (text.toLowerCase().contains("structure") ||
+        text.toLowerCase().contains("folder")) {
+      String structureList = _allFilePaths.take(50).join("\n"); // Top 50 files
       fullPrompt = """
-      CONTEXT (Full Codebase/Scan):
-      $_codebaseContext
+      The user is asking about the file structure.
+      Here is the list of files in the project:
+      $structureList
       
-      USER QUESTION: $text
+      (If list is truncated, mention there are ${_allFilePaths.length} files total).
+      Summarize the architecture.
+      """;
+    }
+
+    // SCENARIO 2: User asks for FULL CODE of a file (e.g., "main.dart code")
+    else if (text.toLowerCase().contains("code") ||
+        text.toLowerCase().contains("file")) {
+      // Find the requested file in our map
+      String? foundFile;
+      String? foundContent;
+
+      for (var path in _fileContentMap.keys) {
+        // Simple fuzzy match: agar user ne "main.dart" bola aur path me "lib/main.dart" hai
+        if (text.toLowerCase().contains(path.split('/').last.toLowerCase())) {
+          foundFile = path;
+          foundContent = _fileContentMap[path];
+          break;
+        }
+      }
+
+      if (foundContent != null) {
+        fullPrompt = """
+        The user wants the code for file: $foundFile.
+        Here is the FULL CONTENT of that file:
+        
+        $foundContent
+        
+        Task: Output the code cleanly in markdown format. Add brief comments explaining what it does.
+        """;
+      } else {
+        // Agar file nahi mili, to critical context bhejo
+        fullPrompt = """
+        User asked: "$text"
+        I could not find a specific file match in the ZIP map.
+        Answer based on this Critical Context:
+        $_criticalContext
+        """;
+      }
+    }
+
+    // SCENARIO 3: General Question (Features, Logic)
+    else {
+      fullPrompt = """
+      CONTEXT (Key Project Files):
+      $_criticalContext
       
-      INSTRUCTIONS:
-      1. If user asks for a specific file (e.g., Show me main.dart), SEARCH the context and return the EXACT code in a code block.
-      2. If code is requested, do not summarize. Give the full code.
-      3. Use colorful formatting logic (Language name at start of block).
+      USER QUESTION:
+      $text
+      
+      Answer based on the code provided above.
       """;
     }
 
@@ -722,14 +684,16 @@ class _RepoChatScreenState extends State<RepoChatScreen>
                 child: Row(children: [
                   const Icon(Icons.check_circle, size: 16, color: Colors.green),
                   const SizedBox(width: 8),
-                  Text("Active: $_activeFileName",
+                  Text(
+                      "Analyzing: $_activeFileName (${_allFilePaths.length} files)",
                       style: const TextStyle(
-                          color: Colors.green, fontWeight: FontWeight.bold, fontSize: 16))
+                          color: Colors.green,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14))
                 ])),
           Expanded(
             child: ListView.builder(
               controller: _scrollController,
-              physics: const ClampingScrollPhysics(), // For smooth scrolling, no fluctuate
               padding: const EdgeInsets.all(16),
               itemCount: _msgs.length,
               itemBuilder: (c, i) => ModernChatBubble(
@@ -743,6 +707,8 @@ class _RepoChatScreenState extends State<RepoChatScreen>
           ),
           if (_isLoading)
             const LinearProgressIndicator(color: AppColors.primaryAccent),
+
+          // 🔥 Suggestions Scroll
           Container(
             height: 50,
             margin: const EdgeInsets.only(bottom: 10),
@@ -756,13 +722,14 @@ class _RepoChatScreenState extends State<RepoChatScreen>
                   backgroundColor: AppColors.cardSurface,
                   side: const BorderSide(color: AppColors.borderSubtle),
                   label: Text(_suggestions[index],
-                      style: const TextStyle(
-                          color: Colors.white, fontWeight: FontWeight.w500, fontSize: 16)),
+                      style:
+                          const TextStyle(color: Colors.white, fontSize: 13)),
                   onPressed: () => _send(_suggestions[index]),
                 );
               },
             ),
           ),
+
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: NeonInputWrapper(
@@ -771,13 +738,15 @@ class _RepoChatScreenState extends State<RepoChatScreen>
                   IconButton(
                       icon: const Icon(Icons.add_circle,
                           color: AppColors.primaryAccent),
-                      onPressed: _showUploadMenu),
+                      onPressed: _pickZipFile), // Direct Zip Pick
                   Expanded(
                       child: TextField(
                           controller: _ctrl,
-                          style: GoogleFonts.outfit(color: Colors.white, fontSize: 16),
+                          style: GoogleFonts.outfit(
+                              color: Colors.white, fontSize: 16),
                           decoration: const InputDecoration(
-                              hintText: "Ask about logic or request files...",
+                              hintText:
+                                  "Ask: 'Show structure' or 'Give main.dart'...",
                               border: InputBorder.none,
                               contentPadding:
                                   EdgeInsets.symmetric(horizontal: 10)),
@@ -797,7 +766,7 @@ class _RepoChatScreenState extends State<RepoChatScreen>
 }
 
 // =============================================================================
-// 🔥 5. UI TO CODE SCREEN (PIXEL PERFECT + REGEX CLEANER + JARVIS SCANNER)
+// 🔥 5. UI TO CODE SCREEN
 // =============================================================================
 
 class UIToCodeScreen extends StatefulWidget {
@@ -859,7 +828,7 @@ class _UIToCodeScreenState extends State<UIToCodeScreen>
             Text("Select Output Language",
                 style: GoogleFonts.outfit(
                     fontSize: 22,
-                    color: Colors.white,
+                    color: Colors.black,
                     fontWeight: FontWeight.bold)),
             const SizedBox(height: 20),
             Wrap(spacing: 12, runSpacing: 12, children: [
@@ -934,8 +903,6 @@ class _UIToCodeScreenState extends State<UIToCodeScreen>
             flex: _generatedCode.isEmpty ? 5 : 2,
             child: _buildImageSection(),
           ),
-
-          // 🔥 FEATURE CARDS (Always show for professional look)
           Padding(
             padding: const EdgeInsets.only(top: 20),
             child: Row(
@@ -949,7 +916,6 @@ class _UIToCodeScreenState extends State<UIToCodeScreen>
               ],
             ),
           ),
-
           if (_loading)
             Padding(
                 padding: const EdgeInsets.all(20),
@@ -963,7 +929,6 @@ class _UIToCodeScreenState extends State<UIToCodeScreen>
                             color: AppColors.primaryAccent, fontSize: 14))
                   ],
                 )),
-
           if (_generatedCode.isNotEmpty)
             Expanded(
               flex: 6,
@@ -991,7 +956,8 @@ class _UIToCodeScreenState extends State<UIToCodeScreen>
                               Text("$_selectedLanguage Output",
                                   style: const TextStyle(
                                       color: Colors.white,
-                                      fontWeight: FontWeight.bold, fontSize: 16)),
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16)),
                             ]),
                             InkWell(
                                 onTap: () {
@@ -1085,12 +1051,11 @@ class _UIToCodeScreenState extends State<UIToCodeScreen>
                 ),
               ),
 
-            // 🔥 JARVIS TEXT ANIMATION
             if (_isScanning)
               Center(
                 child: FadeTransition(
                   opacity: _textAnim,
-                  child: Text("Jarvis Scanning UI...",
+                  child: Text("CodeNetra Scanning Ui...",
                       style: GoogleFonts.outfit(
                           color: AppColors.primaryAccent.withOpacity(0.8),
                           fontSize: 24,
@@ -1129,7 +1094,9 @@ class _UIToCodeScreenState extends State<UIToCodeScreen>
                       padding: const EdgeInsets.symmetric(vertical: 15)),
                   child: const Text("GENERATE CODE",
                       style: TextStyle(
-                          color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16)),
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16)),
                 ),
               ),
 
@@ -1160,7 +1127,7 @@ class _UIToCodeScreenState extends State<UIToCodeScreen>
 }
 
 // =============================================================================
-// HELPER SCREENS (HOME & OTHERS)
+// HELPER SCREENS
 // =============================================================================
 
 class HomeScreen extends StatelessWidget {
@@ -1180,14 +1147,15 @@ class HomeScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text("Welcome Back, ${isDevMode ? 'Developer' : 'Netra User'}",
+                // 🔥 1. HELLO UPDATE
+                Text("Hello, ${isDevMode ? 'Developer' : 'Netra User'}",
                     style: GoogleFonts.outfit(
                         fontSize: 30, fontWeight: FontWeight.bold)),
-                Text("Netra AI v2.0 Online",
-                    style: GoogleFonts.inter(
-                        color: AppColors.primaryAccent,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 18)),
+
+                const SizedBox(height: 8),
+
+                // 🔥 2. ANIMATED PRO STATUS BADGE (REPLACED v2.0)
+                StatusBadge(isDevMode: isDevMode),
               ]),
               const CircleAvatar(
                   backgroundColor: AppColors.cardSurface,
@@ -1220,8 +1188,8 @@ class HomeScreen extends StatelessWidget {
                         () => onNavigate(6))),
                 const SizedBox(width: 15),
                 Expanded(
-                    child: _smallCard("PDF Intelligence",
-                        Icons.picture_as_pdf, Colors.orange, () => onNavigate(5))),
+                    child: _smallCard("PDF Intelligence", Icons.picture_as_pdf,
+                        Colors.orange, () => onNavigate(5))),
               ],
             ],
           )
@@ -1305,6 +1273,83 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
+// 🔥 3. NEW ANIMATED BADGE WIDGET FOR HOME PAGE
+class StatusBadge extends StatefulWidget {
+  final bool isDevMode;
+  const StatusBadge({super.key, required this.isDevMode});
+
+  @override
+  State<StatusBadge> createState() => _StatusBadgeState();
+}
+
+class _StatusBadgeState extends State<StatusBadge>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _opacity;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 1),
+    )..repeat(reverse: true);
+    _opacity = Tween<double>(begin: 0.2, end: 1.0).animate(_controller);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+          color: AppColors.primaryAccent.withOpacity(0.08),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: AppColors.primaryAccent.withOpacity(0.3))),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Blinking Dot
+          FadeTransition(
+            opacity: _opacity,
+            child: const Icon(Icons.circle,
+                size: 10, color: AppColors.primaryAccent),
+          ),
+          const SizedBox(width: 8),
+
+          // Animated Text Switcher
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 400),
+            transitionBuilder: (child, anim) =>
+                FadeTransition(opacity: anim, child: child),
+            child: Text(
+              widget.isDevMode
+                  ? "Ready to Build & Debug 🛠️"
+                  : "Vision Intelligence Active 👁️",
+              // Key is important for AnimatedSwitcher to know text changed
+              key: ValueKey<bool>(widget.isDevMode),
+              style: GoogleFonts.firaCode(
+                  color: AppColors.primaryAccent,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                  letterSpacing: 0.5),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// =============================================================================
+// 🔥 6. LIVE CAMERA & VOICE (CONNECTED TO AI BRAIN)
+// =============================================================================
+
 class LiveCameraScreen extends StatefulWidget {
   const LiveCameraScreen({super.key});
   @override
@@ -1331,8 +1376,10 @@ class _LiveCameraScreenState extends State<LiveCameraScreen> {
         _analyzing = true;
         _desc = "Analyzing scene...";
       });
+      // Connected to AIBrain
       String? res = await _brain.askWithImage(
-          "Describe this scene for a blind person.", File(photo.path));
+          "Describe this scene for a blind person in detail.",
+          File(photo.path));
       setState(() {
         _desc = res ?? "Error analyzing.";
         _analyzing = false;
@@ -1371,77 +1418,6 @@ class _LiveCameraScreenState extends State<LiveCameraScreen> {
           ),
         )
       ],
-    );
-  }
-}
-
-class ErrorFixerScreen extends StatefulWidget {
-  const ErrorFixerScreen({super.key});
-  @override
-  State<ErrorFixerScreen> createState() => _ErrorFixerScreenState();
-}
-
-class _ErrorFixerScreenState extends State<ErrorFixerScreen> {
-  final TextEditingController _ctrl = TextEditingController();
-  String _solution = "";
-  bool _loading = false;
-  final AIBrain _brain = AIBrain();
-
-  @override
-  void initState() {
-    super.initState();
-    _brain.initBrain();
-  }
-
-  void _fix() async {
-    if (_ctrl.text.isEmpty) return;
-    setState(() {
-      _loading = true;
-      _solution = "Analyzing...";
-    });
-    String? res = await _brain
-        .askLaravel("Here is an error log: ${_ctrl.text}. Provide fix.");
-    setState(() {
-      _loading = false;
-      _solution = res ?? "Could not solve.";
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return ProPageLayout(
-      title: "Error Fixer",
-      icon: Icons.bug_report_rounded,
-      child: Column(children: [
-        Expanded(
-            flex: 1,
-            child: ProCard(
-                padding: EdgeInsets.zero,
-                child: TextField(
-                    controller: _ctrl,
-                    maxLines: null,
-                    expands: true,
-                    style: const TextStyle(fontSize: 16),
-                    decoration: const InputDecoration(
-                        hintText: "Paste Error Log...",
-                        contentPadding: EdgeInsets.all(16),
-                        border: InputBorder.none)))),
-        const SizedBox(height: 10),
-        SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-                onPressed: _fix,
-                icon: const Icon(Icons.auto_fix_high),
-                label: const Text("Fix It"))),
-        if (_loading)
-          const LinearProgressIndicator(color: AppColors.primaryAccent),
-        Expanded(
-            flex: 2,
-            child: ProCard(
-                child: SingleChildScrollView(
-                    child: Text(_solution,
-                        style: const TextStyle(color: Colors.white, fontSize: 16)))))
-      ]),
     );
   }
 }
@@ -1514,6 +1490,138 @@ class _VoiceScreenState extends State<VoiceScreen> {
   }
 }
 
+// =============================================================================
+// 🔥 7. ERROR FIXER (UPDATED LOGIC)
+// =============================================================================
+
+class ErrorFixerScreen extends StatefulWidget {
+  const ErrorFixerScreen({super.key});
+  @override
+  State<ErrorFixerScreen> createState() => _ErrorFixerScreenState();
+}
+
+class _ErrorFixerScreenState extends State<ErrorFixerScreen> {
+  final TextEditingController _ctrl = TextEditingController();
+  String _solution = "";
+  bool _loading = false;
+  final AIBrain _brain = AIBrain();
+
+  @override
+  void initState() {
+    super.initState();
+    _brain.initBrain();
+  }
+
+  void _fixError() async {
+    if (_ctrl.text.isEmpty) return;
+    FocusScope.of(context).unfocus(); // Close keyboard
+
+    setState(() {
+      _loading = true;
+      _solution = "🔍 Analyzing Error Stack Trace...";
+    });
+
+    // 🔥 UPDATED PROMPT FOR ERRORS
+    String prompt = """
+    I have a bug in my code. Here is the ERROR LOG:
+    ${_ctrl.text}
+    
+    TASK:
+    1. Identify the root cause.
+    2. Provide the corrected code snippet.
+    3. Explain briefly why this happened.
+    """;
+
+    String? res = await _brain.askLaravel(prompt);
+
+    setState(() {
+      _loading = false;
+      _solution = res ?? "Could not solve this error.";
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ProPageLayout(
+      title: "Error Debugger",
+      icon: Icons.bug_report_rounded,
+      child: Column(
+        children: [
+          Expanded(
+            flex: 1,
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                  color: const Color(0xFF1E1E1E), // VS Code Dark
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.redAccent.withOpacity(0.5))),
+              child: TextField(
+                controller: _ctrl,
+                maxLines: null,
+                expands: true,
+                style:
+                    GoogleFonts.firaCode(color: Colors.redAccent, fontSize: 14),
+                decoration: const InputDecoration(
+                  hintText: "Paste your Stack Trace / Error Log here...",
+                  hintStyle: TextStyle(color: Colors.grey),
+                  border: InputBorder.none,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: _loading ? null : _fixError,
+              icon: _loading
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2))
+                  : const Icon(Icons.auto_fix_high, color: Colors.black),
+              label: Text(_loading ? " DEBUGGING..." : "FIX ERROR",
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, color: Colors.black)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryAccent,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Expanded(
+            flex: 2,
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.cardSurface,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: SingleChildScrollView(
+                child: _solution.isEmpty
+                    ? Center(
+                        child: Text("Solution will appear here",
+                            style: TextStyle(color: Colors.grey[700])))
+                    : SelectableText(
+                        _solution,
+                        style: GoogleFonts.outfit(
+                            color: Colors.white, fontSize: 15),
+                      ),
+              ),
+            ),
+          )
+        ],
+      ),
+    );
+  }
+}
+
+// =============================================================================
+// 🔥 8. CODE EXPERT (UPDATED TO TERMINAL STYLE)
+// =============================================================================
+
 class CodeExpertScreen extends StatefulWidget {
   const CodeExpertScreen({super.key});
   @override
@@ -1522,22 +1630,48 @@ class CodeExpertScreen extends StatefulWidget {
 
 class _CodeExpertScreenState extends State<CodeExpertScreen> {
   final TextEditingController _ctrl = TextEditingController();
-  final List<String> _logs = ["> Code Expert Initialized..."];
+  // Logs for terminal
+  final List<String> _logs = [
+    "> CodeNetra Expert System Initialized...",
+    "> Connected to Gemini 2.5 Flash...",
+    "> Waiting for developer query...",
+  ];
+  final ScrollController _scroll = ScrollController();
   final AIBrain _brain = AIBrain();
+
   @override
   void initState() {
     super.initState();
     _brain.initBrain();
   }
 
-  void _run() async {
-    String cmd = _ctrl.text;
+  void _runCommand() async {
+    String cmd = _ctrl.text.trim();
+    if (cmd.isEmpty) return;
+
     setState(() {
-      _logs.add("> $cmd");
+      _logs.add("\n> developer@codenetra:~\$ $cmd");
+      _logs.add("> Processing...");
       _ctrl.clear();
     });
-    String? res = await _brain.askLaravel("Expert Answer: $cmd");
-    setState(() => _logs.add(res ?? "Error"));
+
+    // Auto scroll to bottom
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (_scroll.hasClients) _scroll.jumpTo(_scroll.position.maxScrollExtent);
+    });
+
+    String prompt =
+        "You are a Linux Terminal style coding expert. Answer briefly and technically. Question: $cmd";
+    String? res = await _brain.askLaravel(prompt);
+
+    setState(() {
+      _logs.removeLast(); // Remove "Processing..."
+      _logs.add(res ?? "> Error: Connection failed.");
+    });
+
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (_scroll.hasClients) _scroll.jumpTo(_scroll.position.maxScrollExtent);
+    });
   }
 
   @override
@@ -1545,31 +1679,102 @@ class _CodeExpertScreenState extends State<CodeExpertScreen> {
     return ProPageLayout(
       title: "Code Expert",
       icon: Icons.terminal,
-      child: ProCard(
-          padding: EdgeInsets.zero,
-          child: Column(children: [
-            Expanded(
-                child: Container(
-                    color: const Color(0xFF1E1E1E),
-                    child: ListView.builder(
-                        itemCount: _logs.length,
-                        itemBuilder: (c, i) => Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 2),
-                            child: Text(_logs[i],
-                                style: GoogleFonts.firaCode(
-                                    fontSize: 14,
-                                    color: Colors.greenAccent)))))),
+      child: Container(
+        decoration: BoxDecoration(
+            color: const Color(0xFF0D0D0D), // Pure Terminal Black
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.primaryAccent.withOpacity(0.3)),
+            boxShadow: [
+              BoxShadow(
+                  color: AppColors.primaryAccent.withOpacity(0.1),
+                  blurRadius: 20)
+            ]),
+        child: Column(
+          children: [
+            // Terminal Header
             Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                color: Colors.black,
-                child: TextField(
-                    controller: _ctrl,
-                    style: const TextStyle(color: Colors.white, fontSize: 16),
-                    onSubmitted: (_) => _run(),
-                    decoration: const InputDecoration(
-                        prefixText: "> ", border: InputBorder.none)))
-          ])),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: const BoxDecoration(
+                color: Color(0xFF1F1F1F),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.circle, color: Colors.red, size: 12),
+                  const SizedBox(width: 6),
+                  const Icon(Icons.circle, color: Colors.amber, size: 12),
+                  const SizedBox(width: 6),
+                  const Icon(Icons.circle, color: Colors.green, size: 12),
+                  const Spacer(),
+                  Text("bash --login",
+                      style: GoogleFonts.firaCode(
+                          color: Colors.grey, fontSize: 12)),
+                  const Spacer(),
+                ],
+              ),
+            ),
+
+            // Logs Area
+            Expanded(
+              child: ListView.builder(
+                controller: _scroll,
+                padding: const EdgeInsets.all(12),
+                itemCount: _logs.length,
+                itemBuilder: (context, index) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 6),
+                    child: SelectableText(
+                      _logs[index],
+                      style: GoogleFonts.firaCode(
+                          color: _logs[index].startsWith(">") ||
+                                  _logs[index].startsWith("bash")
+                              ? AppColors.primaryAccent
+                              : Colors.white,
+                          fontSize: 14,
+                          height: 1.4),
+                    ),
+                  );
+                },
+              ),
+            ),
+
+            // Input Area
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: const BoxDecoration(
+                  border: Border(top: BorderSide(color: Colors.white24))),
+              child: Row(
+                children: [
+                  Text("\$",
+                      style: GoogleFonts.firaCode(
+                          color: AppColors.primaryAccent,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold)),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: TextField(
+                      controller: _ctrl,
+                      style: GoogleFonts.firaCode(
+                          color: Colors.white, fontSize: 16),
+                      cursorColor: AppColors.primaryAccent,
+                      decoration: const InputDecoration(
+                          border: InputBorder.none,
+                          hintText: "Type command...",
+                          hintStyle: TextStyle(color: Colors.white24)),
+                      onSubmitted: (_) => _runCommand(),
+                    ),
+                  ),
+                  IconButton(
+                    icon:
+                        const Icon(Icons.send, color: AppColors.primaryAccent),
+                    onPressed: _runCommand,
+                  )
+                ],
+              ),
+            )
+          ],
+        ),
+      ),
     );
   }
 }
@@ -1679,13 +1884,13 @@ class ModernChatBubble extends StatelessWidget {
   final bool isUser;
   final String text;
   final bool isAnimated;
-  final VoidCallback onAnimationEnd;
+  final VoidCallback? onAnimationEnd;
   const ModernChatBubble(
       {super.key,
       required this.isUser,
       required this.text,
-      required this.isAnimated,
-      required this.onAnimationEnd});
+      this.isAnimated = false,
+      this.onAnimationEnd});
 
   @override
   Widget build(BuildContext context) {
@@ -1704,11 +1909,15 @@ class ModernChatBubble extends StatelessWidget {
           if (isUser)
             Text(text,
                 style: GoogleFonts.outfit(
-                    color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16))
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16))
           else
             ...parts.map((part) {
               if (parts.indexOf(part) % 2 == 0)
-                return Text(part, style: GoogleFonts.outfit(color: Colors.white, fontSize: 16));
+                return Text(part,
+                    style:
+                        GoogleFonts.outfit(color: Colors.white, fontSize: 16));
               else
                 return Container(
                     width: double.infinity,
