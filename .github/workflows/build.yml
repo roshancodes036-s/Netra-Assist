@@ -27,10 +27,13 @@ jobs:
       - name: Get Dependencies
         run: flutter pub get
 
-      # यह है असली जादू (Magic Fix)
-      # यह कमांड गायब हुई फाइलों (जैसे gradlew) को दोबारा बना देगी
-      - name: Repair Project Structure
-        run: flutter create .
+      # यह है नया फिक्स (New Fix)
+      # हम GitHub के कंप्यूटर में मौजूद Gradle का यूज़ करके फाइल बनाएंगे
+      - name: Generate Missing Gradle Wrapper
+        run: |
+          cd android
+          gradle wrapper
+          chmod +x gradlew
 
       - name: Build APK (Debug)
         run: flutter build apk --debug --no-sound-null-safety
