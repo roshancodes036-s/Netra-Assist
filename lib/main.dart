@@ -1,13 +1,15 @@
+// =============================================================================
+// 🔥 CODENETRA AI - FULLY INTEGRATED MAIN.DART
+// =============================================================================
+
 import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/services.dart';
-import 'package:http/http.dart' as http;
 
 // ✅ FIREBASE
 import 'package:firebase_core/firebase_core.dart';
@@ -20,7 +22,9 @@ import 'package:archive/archive.dart';
 import 'package:archive/archive_io.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
-import 'package:permission_handler/permission_handler.dart';
+import 'package:camera/camera.dart';
+import 'package:syncfusion_flutter_pdf/pdf.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 // ✅ BRAIN (External File)
 import 'ai_logic.dart';
@@ -32,6 +36,8 @@ import 'ai_logic.dart';
 class AppColors {
   static const Color primaryAccent = Color(0xFFCCFF00); // Neon Green
   static const Color backgroundDark = Color(0xFF050505); // Pitch Black
+  // 👇 FIXED: Added 'background' alias for compatibility
+  static const Color background = Color(0xFF050505);
   static const Color cardSurface = Color(0xFF151515); // Dark Grey
   static const Color textPrimary = Colors.white;
   static const Color textSecondary = Color(0xFFA0A0A0);
@@ -195,7 +201,7 @@ class _MainLayoutState extends State<MainLayout> {
     final List<Widget> screens = [
       HomeScreen(onNavigate: _changeScreen, isDevMode: _isDevMode), // 0
       const RepoChatScreen(), // 1
-      const TemplatesScreen(), // 2
+      const TemplatesScreen(), // 2 (Content Studio)
       const ErrorFixerScreen(), // 3
       const UIToCodeScreen(), // 4
       const PDFScreen(), // 5
@@ -437,10 +443,9 @@ class _RepoChatScreenState extends State<RepoChatScreen>
   String? _activeFileName;
 
   // 🔥 SMART CONTEXT VARIABLES
-  Map<String, String> _fileContentMap = {}; // Saari files ka code yahan rahega
-  List<String> _allFilePaths = []; // Sirf file ke naam structure ke liye
-  String _criticalContext =
-      ""; // Top 5-6 files ka data jo AI ko pehle bhejna hai
+  final Map<String, String> _fileContentMap = {};
+  final List<String> _allFilePaths = [];
+  String _criticalContext = "";
   bool _isContextLoaded = false;
 
   final AIBrain _brain = AIBrain();
@@ -461,7 +466,6 @@ class _RepoChatScreenState extends State<RepoChatScreen>
         "Hello Developer! Upload a ZIP. I will auto-analyze the core files instantly.");
   }
 
-  // 🔥 1. SMART ZIP PROCESSOR (The Magic Logic)
   Future<void> _processZipFile(List<int> bytes, String filename) async {
     setState(() {
       _isLoading = true;
@@ -474,7 +478,6 @@ class _RepoChatScreenState extends State<RepoChatScreen>
     try {
       final archive = ZipDecoder().decodeBytes(bytes);
 
-      // A. Priority Files List (Jo pehle read karni hain)
       final List<String> priorityFiles = [
         'pubspec.yaml',
         'main.dart',
@@ -491,12 +494,10 @@ class _RepoChatScreenState extends State<RepoChatScreen>
       StringBuffer criticalBuffer = StringBuffer();
       int totalFiles = 0;
 
-      // B. Filter & Read Loop
       for (final file in archive) {
         if (file.isFile) {
           String path = file.name;
 
-          // 🚫 JUNK FILTER: Inhe ignore kro speed ke liye
           if (path.contains('node_modules') ||
               path.contains('.git/') ||
               path.contains('build/') ||
@@ -507,19 +508,15 @@ class _RepoChatScreenState extends State<RepoChatScreen>
             continue;
           }
 
-          _allFilePaths.add(path); // Structure ke liye path save kro
+          _allFilePaths.add(path);
           totalFiles++;
 
-          // File content read kro
           try {
             String content = String.fromCharCodes(file.content as List<int>);
-            _fileContentMap[path] = content; // Full map me save kro
+            _fileContentMap[path] = content;
 
-            // ✅ CRITICAL FILE CHECK (Sirf 5-6 important files dhundo)
-            // Agar file ka naam priority list me hai, ya wo 'lib/' folder me hai (top level)
             bool isPriority = priorityFiles.any((p) => path.endsWith(p));
 
-            // Limit critical context to ~20kb to keep it fast initially
             if (isPriority && criticalBuffer.length < 20000) {
               criticalBuffer.writeln("\n--- FILE: $path ---\n$content\n");
             }
@@ -532,7 +529,6 @@ class _RepoChatScreenState extends State<RepoChatScreen>
       _criticalContext = criticalBuffer.toString();
       _isContextLoaded = true;
 
-      // C. AI Auto-Summary Request
       String summaryPrompt = """
       ACT AS A SENIOR DEVELOPER.
       I have uploaded a project ZIP.
@@ -559,7 +555,6 @@ class _RepoChatScreenState extends State<RepoChatScreen>
     }
   }
 
-  // File Picker Wrapper
   Future<void> _pickZipFile() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
@@ -576,7 +571,6 @@ class _RepoChatScreenState extends State<RepoChatScreen>
     }
   }
 
-  // 🔥 2. SMART QUERY HANDLER
   void _send(String text) async {
     if (text.isEmpty) return;
     _ctrl.clear();
@@ -585,10 +579,9 @@ class _RepoChatScreenState extends State<RepoChatScreen>
 
     String fullPrompt = "";
 
-    // SCENARIO 1: User asks for STRUCTURE
     if (text.toLowerCase().contains("structure") ||
         text.toLowerCase().contains("folder")) {
-      String structureList = _allFilePaths.take(50).join("\n"); // Top 50 files
+      String structureList = _allFilePaths.take(50).join("\n");
       fullPrompt = """
       The user is asking about the file structure.
       Here is the list of files in the project:
@@ -597,17 +590,12 @@ class _RepoChatScreenState extends State<RepoChatScreen>
       (If list is truncated, mention there are ${_allFilePaths.length} files total).
       Summarize the architecture.
       """;
-    }
-
-    // SCENARIO 2: User asks for FULL CODE of a file (e.g., "main.dart code")
-    else if (text.toLowerCase().contains("code") ||
+    } else if (text.toLowerCase().contains("code") ||
         text.toLowerCase().contains("file")) {
-      // Find the requested file in our map
       String? foundFile;
       String? foundContent;
 
       for (var path in _fileContentMap.keys) {
-        // Simple fuzzy match: agar user ne "main.dart" bola aur path me "lib/main.dart" hai
         if (text.toLowerCase().contains(path.split('/').last.toLowerCase())) {
           foundFile = path;
           foundContent = _fileContentMap[path];
@@ -625,7 +613,6 @@ class _RepoChatScreenState extends State<RepoChatScreen>
         Task: Output the code cleanly in markdown format. Add brief comments explaining what it does.
         """;
       } else {
-        // Agar file nahi mili, to critical context bhejo
         fullPrompt = """
         User asked: "$text"
         I could not find a specific file match in the ZIP map.
@@ -633,10 +620,7 @@ class _RepoChatScreenState extends State<RepoChatScreen>
         $_criticalContext
         """;
       }
-    }
-
-    // SCENARIO 3: General Question (Features, Logic)
-    else {
+    } else {
       fullPrompt = """
       CONTEXT (Key Project Files):
       $_criticalContext
@@ -707,8 +691,6 @@ class _RepoChatScreenState extends State<RepoChatScreen>
           ),
           if (_isLoading)
             const LinearProgressIndicator(color: AppColors.primaryAccent),
-
-          // 🔥 Suggestions Scroll
           Container(
             height: 50,
             margin: const EdgeInsets.only(bottom: 10),
@@ -729,7 +711,6 @@ class _RepoChatScreenState extends State<RepoChatScreen>
               },
             ),
           ),
-
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: NeonInputWrapper(
@@ -791,9 +772,9 @@ class _UIToCodeScreenState extends State<UIToCodeScreen>
   void initState() {
     super.initState();
     _brain.initBrain();
-    _scanController =
-        AnimationController(vsync: this, duration: const Duration(seconds: 2))
-          ..repeat(reverse: true);
+    _scanController = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 1500))
+      ..repeat(reverse: true);
     _textAnim = Tween<double>(begin: 0.5, end: 1.0).animate(_scanController);
   }
 
@@ -828,7 +809,7 @@ class _UIToCodeScreenState extends State<UIToCodeScreen>
             Text("Select Output Language",
                 style: GoogleFonts.outfit(
                     fontSize: 22,
-                    color: Colors.black,
+                    color: Colors.white,
                     fontWeight: FontWeight.bold)),
             const SizedBox(height: 20),
             Wrap(spacing: 12, runSpacing: 12, children: [
@@ -845,8 +826,10 @@ class _UIToCodeScreenState extends State<UIToCodeScreen>
 
   Widget _langChip(String label, IconData icon) {
     return ActionChip(
-      avatar: Icon(icon, size: 18),
-      label: Text(label, style: const TextStyle(fontSize: 16)),
+      avatar: Icon(icon, size: 18, color: Colors.black),
+      label: Text(label,
+          style: GoogleFonts.outfit(
+              color: Colors.black, fontSize: 16, fontWeight: FontWeight.bold)),
       backgroundColor: AppColors.primaryAccent,
       onPressed: () {
         Navigator.pop(context);
@@ -864,14 +847,14 @@ class _UIToCodeScreenState extends State<UIToCodeScreen>
     });
 
     String prompt = """
-    You are an Expert UI Developer.
-    TASK: Convert this UI screenshot to $_selectedLanguage.
+    YOU ARE A LEGENDARY FRONT-END ENGINEER specialized in pixel-perfect UI replication.
     
-    CRITICAL RULES:
-    1. Make it PIXEL-PERFECT. Match colors, gradients, padding, and font sizes exactly.
-    2. If there is a glassmorphism effect, implement it properly (BackdropFilter).
-    3. Return ONLY the code inside a code block (```$_selectedLanguage ... ```).
-    4. DO NOT write any conversational text. JUST THE CODE.
+    TASK: Deeply analyze the attached UI screenshot and reverse-engineer it into a COMPLETE, RUNNABLE $_selectedLanguage code file.
+
+    STRICT REQUIREMENTS FOR "GOD-LEVEL" ACCURACY:
+    1. **VISUAL IDENTITY:** EXTRACT EXACT HEX COLORS. Replicate gradients, shadows, and border radii precisely. Use glassmorphism filters if needed.
+    2. **LAYOUT & STRUCTURE:** ESTIMATE PADDING, MARGINS, and font sizes PRECISELY to match the image hierarchy.
+    3. **OUTPUT FORMAT:** PROVIDE THE FULL, COMPLETE CODE. No placeholders. Wrap code in triple backticks (```$_selectedLanguage ... ```).
     """;
 
     String? result = await _brain.askWithImage(prompt, _image!);
@@ -951,7 +934,8 @@ class _UIToCodeScreenState extends State<UIToCodeScreen>
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Row(children: [
-                              Icon(Icons.code, color: Colors.blue, size: 18),
+                              const Icon(Icons.code,
+                                  color: Colors.blue, size: 18),
                               const SizedBox(width: 8),
                               Text("$_selectedLanguage Output",
                                   style: const TextStyle(
@@ -1028,41 +1012,46 @@ class _UIToCodeScreenState extends State<UIToCodeScreen>
               Image.file(_image!, fit: BoxFit.contain)
             else
               _buildPlaceholder(),
-
-            // 🔥 JARVIS LASER SCANNER ANIMATION
             if (_isScanning)
               AnimatedBuilder(
                 animation: _scanController,
                 builder: (context, child) => FractionallySizedBox(
-                  heightFactor: 0.05,
+                  heightFactor: 0.005,
                   alignment: Alignment(0, _scanController.value * 2 - 1),
                   child: Container(
                     decoration: BoxDecoration(
-                        gradient: LinearGradient(colors: [
-                          AppColors.primaryAccent.withOpacity(0),
-                          AppColors.primaryAccent,
-                          AppColors.primaryAccent.withOpacity(0)
-                        ]),
+                        gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              AppColors.primaryAccent.withOpacity(0),
+                              AppColors.primaryAccent,
+                              AppColors.primaryAccent.withOpacity(0)
+                            ]),
                         boxShadow: const [
                           BoxShadow(
-                              color: AppColors.primaryAccent, blurRadius: 15)
+                              color: AppColors.primaryAccent,
+                              blurRadius: 8,
+                              spreadRadius: 1)
                         ]),
                   ),
                 ),
               ),
-
             if (_isScanning)
               Center(
                 child: FadeTransition(
                   opacity: _textAnim,
-                  child: Text("CodeNetra Scanning Ui...",
+                  child: Text("CodeNetra Scanning...",
                       style: GoogleFonts.outfit(
-                          color: AppColors.primaryAccent.withOpacity(0.8),
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold)),
+                          color: AppColors.primaryAccent,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          shadows: [
+                            const Shadow(
+                                color: AppColors.primaryAccent, blurRadius: 10)
+                          ])),
                 ),
               ),
-
             if (!hasImage)
               Positioned(
                 bottom: 25,
@@ -1072,16 +1061,21 @@ class _UIToCodeScreenState extends State<UIToCodeScreen>
                     Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                   ElevatedButton.icon(
                       onPressed: () => _pickImage(ImageSource.camera),
-                      icon: const Icon(Icons.camera_alt),
-                      label: const Text("Camera")),
+                      icon: const Icon(Icons.camera_alt, color: Colors.black),
+                      label: const Text("Camera",
+                          style: TextStyle(color: Colors.black)),
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primaryAccent)),
                   const SizedBox(width: 15),
                   ElevatedButton.icon(
                       onPressed: () => _pickImage(ImageSource.gallery),
-                      icon: const Icon(Icons.photo),
-                      label: const Text("Gallery")),
+                      icon: const Icon(Icons.photo, color: Colors.black),
+                      label: const Text("Gallery",
+                          style: TextStyle(color: Colors.black)),
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primaryAccent)),
                 ]),
               ),
-
             if (hasImage && !_loading)
               Positioned(
                 bottom: 25,
@@ -1091,15 +1085,16 @@ class _UIToCodeScreenState extends State<UIToCodeScreen>
                   onPressed: _showLanguageSelector,
                   style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primaryAccent,
-                      padding: const EdgeInsets.symmetric(vertical: 15)),
+                      padding: const EdgeInsets.symmetric(vertical: 15),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30))),
                   child: const Text("GENERATE CODE",
                       style: TextStyle(
                           color: Colors.black,
                           fontWeight: FontWeight.bold,
-                          fontSize: 16)),
+                          fontSize: 18)),
                 ),
               ),
-
             if (hasImage && !_loading)
               Positioned(
                 top: 10,
@@ -1127,7 +1122,7 @@ class _UIToCodeScreenState extends State<UIToCodeScreen>
 }
 
 // =============================================================================
-// HELPER SCREENS
+// HELPER SCREENS (HOME, BADGE, CARDS)
 // =============================================================================
 
 class HomeScreen extends StatelessWidget {
@@ -1147,14 +1142,10 @@ class HomeScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                // 🔥 1. HELLO UPDATE
                 Text("Hello, ${isDevMode ? 'Developer' : 'Netra User'}",
                     style: GoogleFonts.outfit(
                         fontSize: 30, fontWeight: FontWeight.bold)),
-
                 const SizedBox(height: 8),
-
-                // 🔥 2. ANIMATED PRO STATUS BADGE (REPLACED v2.0)
                 StatusBadge(isDevMode: isDevMode),
               ]),
               const CircleAvatar(
@@ -1273,7 +1264,6 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-// 🔥 3. NEW ANIMATED BADGE WIDGET FOR HOME PAGE
 class StatusBadge extends StatefulWidget {
   final bool isDevMode;
   const StatusBadge({super.key, required this.isDevMode});
@@ -1314,15 +1304,12 @@ class _StatusBadgeState extends State<StatusBadge>
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Blinking Dot
           FadeTransition(
             opacity: _opacity,
             child: const Icon(Icons.circle,
                 size: 10, color: AppColors.primaryAccent),
           ),
           const SizedBox(width: 8),
-
-          // Animated Text Switcher
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 400),
             transitionBuilder: (child, anim) =>
@@ -1331,7 +1318,6 @@ class _StatusBadgeState extends State<StatusBadge>
               widget.isDevMode
                   ? "Ready to Build & Debug 🛠️"
                   : "Vision Intelligence Active 👁️",
-              // Key is important for AnimatedSwitcher to know text changed
               key: ValueKey<bool>(widget.isDevMode),
               style: GoogleFonts.firaCode(
                   color: AppColors.primaryAccent,
@@ -1347,7 +1333,7 @@ class _StatusBadgeState extends State<StatusBadge>
 }
 
 // =============================================================================
-// 🔥 6. LIVE CAMERA & VOICE (CONNECTED TO AI BRAIN)
+// 🔥 6. LIVE VISION PRO (ROAD SAFETY & CURRENCY MODE)
 // =============================================================================
 
 class LiveCameraScreen extends StatefulWidget {
@@ -1357,141 +1343,200 @@ class LiveCameraScreen extends StatefulWidget {
 }
 
 class _LiveCameraScreenState extends State<LiveCameraScreen> {
-  final ImagePicker _picker = ImagePicker();
+  CameraController? _controller;
+  Future<void>? _initializeControllerFuture;
   final FlutterTts _tts = FlutterTts();
   final AIBrain _brain = AIBrain();
-  bool _analyzing = false;
-  String _desc = "Point camera and tap mic to analyze.";
+
+  bool _isProcessing = false;
+  String _desc = "नेत्रा विजन सक्रिय है...";
+  Timer? _timer;
 
   @override
   void initState() {
     super.initState();
     _brain.initBrain();
+    _setupVoice();
+    _initCamera();
   }
 
-  Future<void> _analyzeScene() async {
-    final XFile? photo = await _picker.pickImage(source: ImageSource.camera);
-    if (photo != null) {
-      setState(() {
-        _analyzing = true;
-        _desc = "Analyzing scene...";
-      });
-      // Connected to AIBrain
-      String? res = await _brain.askWithImage(
-          "Describe this scene for a blind person in detail.",
-          File(photo.path));
-      setState(() {
-        _desc = res ?? "Error analyzing.";
-        _analyzing = false;
-      });
-      await _tts.speak(_desc);
-    }
+  Future<void> _setupVoice() async {
+    await _tts.setLanguage("hi-IN");
+    await _tts.setPitch(1.0);
+    await _tts.setSpeechRate(0.6);
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Container(
-            color: Colors.black,
-            child: const Center(
-                child:
-                    Icon(Icons.camera_alt, size: 100, color: Colors.white10))),
-        Positioned(
-          bottom: 40,
-          left: 20,
-          right: 20,
-          child: ProCard(
-            child: Column(mainAxisSize: MainAxisSize.min, children: [
-              if (_analyzing)
-                const LinearProgressIndicator(color: AppColors.primaryAccent),
-              const SizedBox(height: 10),
-              Text(_desc,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.white, fontSize: 18)),
-              const SizedBox(height: 20),
-              FloatingActionButton(
-                  onPressed: _analyzeScene,
-                  backgroundColor: AppColors.primaryAccent,
-                  child: const Icon(Icons.camera, color: Colors.black))
-            ]),
-          ),
-        )
-      ],
-    );
-  }
-}
+  Future<void> _initCamera() async {
+    final cameras = await availableCameras();
+    if (cameras.isNotEmpty) {
+      _controller = CameraController(
+        cameras.first,
+        ResolutionPreset.medium,
+        enableAudio: false,
+      );
 
-class VoiceScreen extends StatefulWidget {
-  const VoiceScreen({super.key});
-  @override
-  State<VoiceScreen> createState() => _VoiceScreenState();
-}
-
-class _VoiceScreenState extends State<VoiceScreen> {
-  late stt.SpeechToText _speech;
-  bool _isListening = false;
-  String _text = "Tap mic to speak";
-  final AIBrain _brain = AIBrain();
-  final FlutterTts _tts = FlutterTts();
-
-  @override
-  void initState() {
-    super.initState();
-    _speech = stt.SpeechToText();
-    _brain.initBrain();
-  }
-
-  void _listen() async {
-    if (!_isListening) {
-      bool available = await _speech.initialize();
-      if (available) {
-        setState(() => _isListening = true);
-        _speech.listen(onResult: (val) {
-          setState(() {
-            _text = val.recognizedWords;
-            if (val.finalResult) _processVoice(_text);
-          });
-        });
+      _initializeControllerFuture = _controller!.initialize();
+      if (mounted) {
+        setState(() {});
+        _startFastAnalysisLoop();
       }
-    } else {
-      setState(() => _isListening = false);
-      _speech.stop();
     }
   }
 
-  void _processVoice(String query) async {
-    setState(() => _isListening = false);
-    String? res = await _brain.askLaravel("Answer briefly: $query");
-    setState(() => _text = res ?? "Error.");
-    await _tts.speak(_text);
+  void _startFastAnalysisLoop() {
+    _timer = Timer.periodic(const Duration(milliseconds: 2500), (timer) {
+      if (!_isProcessing && mounted) {
+        _captureAndAnalyze();
+      }
+    });
+  }
+
+  Future<void> _captureAndAnalyze() async {
+    if (_controller == null || !_controller!.value.isInitialized) return;
+
+    try {
+      setState(() => _isProcessing = true);
+
+      final image = await _controller!.takePicture();
+
+      String prompt = """
+      You are a visual assistant for a blind person walking on the road. Act fast.
+      ANALYZE PRIORITY:
+      1. **DANGER:** Incoming vehicles (Car/Bike from Left/Right), open manholes, or obstacles? Warn immediately.
+      2. **CURRENCY:** If you see money, state the exact value (e.g., '500 रुपये का नोट').
+      3. **OBJECTS:** If safe, briefly name the main object in front.
+      
+      OUTPUT RULES:
+      - Reply in **SHUDH HINDI**.
+      - Keep it under 6-8 words for speed.
+      - Examples: "सावधान, बायीं ओर से कार आ रही है", "सामने एक गाय खड़ी है", "यह 100 रुपये का नोट है".
+      """;
+
+      String? res = await _brain.askWithImage(prompt, File(image.path));
+
+      if (mounted && res != null) {
+        setState(() {
+          _desc = res;
+          _isProcessing = false;
+        });
+
+        await _tts.speak(res);
+      }
+    } catch (e) {
+      setState(() => _isProcessing = false);
+    }
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _controller?.dispose();
+    _tts.stop();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return ProPageLayout(
-      title: "Voice AI",
-      icon: Icons.graphic_eq,
-      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-        Icon(Icons.mic,
-            size: 60,
-            color: _isListening ? Colors.red : AppColors.primaryAccent),
-        const SizedBox(height: 30),
-        Text(_text,
-            textAlign: TextAlign.center, style: const TextStyle(fontSize: 20)),
-        const SizedBox(height: 40),
-        FloatingActionButton(
-            onPressed: _listen,
-            backgroundColor: AppColors.primaryAccent,
-            child: Icon(_isListening ? Icons.stop : Icons.mic,
-                color: Colors.black))
-      ]),
+    if (_controller == null || _initializeControllerFuture == null) {
+      return const Center(
+          child: CircularProgressIndicator(color: AppColors.primaryAccent));
+    }
+
+    return FutureBuilder<void>(
+      future: _initializeControllerFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.done) {
+          return Stack(
+            fit: StackFit.expand,
+            children: [
+              CameraPreview(_controller!),
+              Container(
+                decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                      Colors.transparent,
+                      Colors.black.withOpacity(0.9),
+                    ],
+                        stops: const [
+                      0.5,
+                      1.0
+                    ])),
+              ),
+              Positioned(
+                bottom: 30,
+                left: 20,
+                right: 20,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      _desc,
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.outfit(
+                          color: _desc.contains("सावधान") ||
+                                  _desc.contains("Car") ||
+                                  _desc.contains("Bike")
+                              ? Colors.redAccent
+                              : Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          shadows: [
+                            const Shadow(color: Colors.black, blurRadius: 10)
+                          ]),
+                    ),
+                    const SizedBox(height: 20),
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 500),
+                      height: _isProcessing ? 70 : 80,
+                      width: _isProcessing ? 70 : 80,
+                      decoration:
+                          BoxDecoration(shape: BoxShape.circle, boxShadow: [
+                        BoxShadow(
+                            color: _desc.contains("सावधान")
+                                ? Colors.red.withOpacity(0.6)
+                                : AppColors.primaryAccent.withOpacity(0.4),
+                            blurRadius: 30,
+                            spreadRadius: 5)
+                      ]),
+                      child: Image.asset("assets/orb.gif", fit: BoxFit.cover),
+                    ),
+                    const SizedBox(height: 10),
+                    const Text(
+                      "Live Tracking Active",
+                      style: TextStyle(
+                          color: Colors.white54,
+                          fontSize: 10,
+                          letterSpacing: 2),
+                    )
+                  ],
+                ),
+              ),
+              Positioned(
+                top: 40,
+                left: 10,
+                child: IconButton(
+                  icon: const Icon(Icons.arrow_back,
+                      color: Colors.white, size: 30),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              )
+            ],
+          );
+        } else {
+          return const Center(
+              child: CircularProgressIndicator(color: AppColors.primaryAccent));
+        }
+      },
     );
   }
 }
 
 // =============================================================================
-// 🔥 7. ERROR FIXER (UPDATED LOGIC)
+// 🔥 7. ERROR FIXER PRO
 // =============================================================================
 
 class ErrorFixerScreen extends StatefulWidget {
@@ -1504,6 +1549,7 @@ class _ErrorFixerScreenState extends State<ErrorFixerScreen> {
   final TextEditingController _ctrl = TextEditingController();
   String _solution = "";
   bool _loading = false;
+  File? _errorImage;
   final AIBrain _brain = AIBrain();
 
   @override
@@ -1512,18 +1558,54 @@ class _ErrorFixerScreenState extends State<ErrorFixerScreen> {
     _brain.initBrain();
   }
 
-  void _fixError() async {
+  Future<void> _scanErrorImage(ImageSource source) async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: source);
+
+    if (pickedFile != null) {
+      setState(() {
+        _errorImage = File(pickedFile.path);
+        _loading = true;
+        _solution = "🔍 Scanning Error Log from Image...";
+      });
+
+      String prompt =
+          "Extract the error message from this screenshot and FIX IT. Explain the root cause briefly.";
+      String? res = await _brain.askWithImage(prompt, _errorImage!);
+
+      setState(() {
+        _loading = false;
+        _solution = res ?? "Could not read error from image.";
+      });
+    }
+  }
+
+  // 🌐 FEATURE 2: GOOGLE SEARCH BUTTON (Corrected Code)
+  Future<void> _searchOnGoogle() async {
     if (_ctrl.text.isEmpty) return;
-    FocusScope.of(context).unfocus(); // Close keyboard
+    // Sirf pehli line search query banegi
+    String query = _ctrl.text.split('\n').first;
+
+    // 👇 Ye line dhyan se copy karein (No Markdown brackets)
+    final url = Uri.parse(
+        "https://www.google.com/search?q=${Uri.encodeComponent(query)}");
+
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  void _fixError() async {
+    if (_ctrl.text.isEmpty && _errorImage == null) return;
+    FocusScope.of(context).unfocus();
 
     setState(() {
       _loading = true;
-      _solution = "🔍 Analyzing Error Stack Trace...";
+      _solution = "🔍 Analyzing Stack Trace & Logic...";
     });
 
-    // 🔥 UPDATED PROMPT FOR ERRORS
     String prompt = """
-    I have a bug in my code. Here is the ERROR LOG:
+    I have a bug. Here is the ERROR LOG:
     ${_ctrl.text}
     
     TASK:
@@ -1543,7 +1625,7 @@ class _ErrorFixerScreenState extends State<ErrorFixerScreen> {
   @override
   Widget build(BuildContext context) {
     return ProPageLayout(
-      title: "Error Debugger",
+      title: "Error Debugger Pro",
       icon: Icons.bug_report_rounded,
       child: Column(
         children: [
@@ -1552,42 +1634,83 @@ class _ErrorFixerScreenState extends State<ErrorFixerScreen> {
             child: Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                  color: const Color(0xFF1E1E1E), // VS Code Dark
+                  color: const Color(0xFF1E1E1E),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: Colors.redAccent.withOpacity(0.5))),
-              child: TextField(
-                controller: _ctrl,
-                maxLines: null,
-                expands: true,
-                style:
-                    GoogleFonts.firaCode(color: Colors.redAccent, fontSize: 14),
-                decoration: const InputDecoration(
-                  hintText: "Paste your Stack Trace / Error Log here...",
-                  hintStyle: TextStyle(color: Colors.grey),
-                  border: InputBorder.none,
-                ),
+              child: Column(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _ctrl,
+                      maxLines: null,
+                      expands: true,
+                      style: GoogleFonts.firaCode(
+                          color: Colors.redAccent, fontSize: 13),
+                      decoration: const InputDecoration(
+                        hintText: "Paste Stack Trace OR Scan Screenshot...",
+                        hintStyle: TextStyle(color: Colors.grey),
+                        border: InputBorder.none,
+                      ),
+                    ),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Text("Scan Error:",
+                          style:
+                              TextStyle(color: Colors.grey[600], fontSize: 12)),
+                      IconButton(
+                        icon: const Icon(Icons.camera_alt,
+                            color: AppColors.primaryAccent),
+                        onPressed: () => _scanErrorImage(ImageSource.camera),
+                        tooltip: "Scan from Camera",
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.image,
+                            color: AppColors.primaryAccent),
+                        onPressed: () => _scanErrorImage(ImageSource.gallery),
+                        tooltip: "Upload Screenshot",
+                      ),
+                    ],
+                  )
+                ],
               ),
             ),
           ),
           const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: _loading ? null : _fixError,
-              icon: _loading
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2))
-                  : const Icon(Icons.auto_fix_high, color: Colors.black),
-              label: Text(_loading ? " DEBUGGING..." : "FIX ERROR",
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, color: Colors.black)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryAccent,
-                padding: const EdgeInsets.symmetric(vertical: 16),
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: _loading ? null : _fixError,
+                  icon: _loading
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Icon(Icons.auto_fix_high, color: Colors.black),
+                  label: Text(_loading ? " DEBUGGING..." : "FIX ERROR",
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, color: Colors.black)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryAccent,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                ),
               ),
-            ),
+              const SizedBox(width: 10),
+              InkWell(
+                onTap: _searchOnGoogle,
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                      color: AppColors.cardSurface,
+                      borderRadius: BorderRadius.circular(30),
+                      border: Border.all(color: AppColors.borderSubtle)),
+                  child: const Icon(Icons.search, color: Colors.white),
+                ),
+              )
+            ],
           ),
           const SizedBox(height: 16),
           Expanded(
@@ -1602,12 +1725,19 @@ class _ErrorFixerScreenState extends State<ErrorFixerScreen> {
               child: SingleChildScrollView(
                 child: _solution.isEmpty
                     ? Center(
-                        child: Text("Solution will appear here",
-                            style: TextStyle(color: Colors.grey[700])))
-                    : SelectableText(
-                        _solution,
-                        style: GoogleFonts.outfit(
-                            color: Colors.white, fontSize: 15),
+                        child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.health_and_safety,
+                              size: 50, color: Colors.grey[800]),
+                          const SizedBox(height: 10),
+                          Text("Paste error or scan screenshot to debug",
+                              style: TextStyle(color: Colors.grey[700])),
+                        ],
+                      ))
+                    : SelectableText.rich(
+                        CodeHighlighter.highlight(_solution),
+                        style: GoogleFonts.firaCode(fontSize: 14, height: 1.5),
                       ),
               ),
             ),
@@ -1619,7 +1749,7 @@ class _ErrorFixerScreenState extends State<ErrorFixerScreen> {
 }
 
 // =============================================================================
-// 🔥 8. CODE EXPERT (UPDATED TO TERMINAL STYLE)
+// 🔥 8. CODE EXPERT PRO
 // =============================================================================
 
 class CodeExpertScreen extends StatefulWidget {
@@ -1630,7 +1760,6 @@ class CodeExpertScreen extends StatefulWidget {
 
 class _CodeExpertScreenState extends State<CodeExpertScreen> {
   final TextEditingController _ctrl = TextEditingController();
-  // Logs for terminal
   final List<String> _logs = [
     "> CodeNetra Expert System Initialized...",
     "> Connected to Gemini 2.5 Flash...",
@@ -1649,13 +1778,21 @@ class _CodeExpertScreenState extends State<CodeExpertScreen> {
     String cmd = _ctrl.text.trim();
     if (cmd.isEmpty) return;
 
+    if (cmd == "clear") {
+      setState(() {
+        _logs.clear();
+        _logs.add("> Console cleared.");
+        _ctrl.clear();
+      });
+      return;
+    }
+
     setState(() {
       _logs.add("\n> developer@codenetra:~\$ $cmd");
       _logs.add("> Processing...");
       _ctrl.clear();
     });
 
-    // Auto scroll to bottom
     Future.delayed(const Duration(milliseconds: 100), () {
       if (_scroll.hasClients) _scroll.jumpTo(_scroll.position.maxScrollExtent);
     });
@@ -1665,13 +1802,57 @@ class _CodeExpertScreenState extends State<CodeExpertScreen> {
     String? res = await _brain.askLaravel(prompt);
 
     setState(() {
-      _logs.removeLast(); // Remove "Processing..."
+      _logs.removeLast();
       _logs.add(res ?? "> Error: Connection failed.");
     });
 
     Future.delayed(const Duration(milliseconds: 100), () {
       if (_scroll.hasClients) _scroll.jumpTo(_scroll.position.maxScrollExtent);
     });
+  }
+
+  Widget _buildQuickChips() {
+    final commands = [
+      "/explain",
+      "/fix_bug",
+      "/refactor",
+      "/optimize",
+      "clear"
+    ];
+    return Container(
+      height: 40,
+      margin: const EdgeInsets.only(bottom: 8, left: 8),
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: commands.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        itemBuilder: (context, index) {
+          bool isClear = commands[index] == "clear";
+          return ActionChip(
+            backgroundColor: const Color(0xFF1F1F1F),
+            side: BorderSide(
+                color: isClear
+                    ? Colors.redAccent.withOpacity(0.5)
+                    : AppColors.primaryAccent.withOpacity(0.3)),
+            label: Text(commands[index],
+                style: GoogleFonts.firaCode(
+                    color: isClear ? Colors.redAccent : AppColors.primaryAccent,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold)),
+            onPressed: () {
+              if (isClear) {
+                setState(() {
+                  _logs.clear();
+                  _logs.add("> Console cleared.");
+                });
+              } else {
+                _ctrl.text = "${commands[index]} ";
+              }
+            },
+          );
+        },
+      ),
+    );
   }
 
   @override
@@ -1681,7 +1862,7 @@ class _CodeExpertScreenState extends State<CodeExpertScreen> {
       icon: Icons.terminal,
       child: Container(
         decoration: BoxDecoration(
-            color: const Color(0xFF0D0D0D), // Pure Terminal Black
+            color: const Color(0xFF0D0D0D),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: AppColors.primaryAccent.withOpacity(0.3)),
             boxShadow: [
@@ -1691,7 +1872,6 @@ class _CodeExpertScreenState extends State<CodeExpertScreen> {
             ]),
         child: Column(
           children: [
-            // Terminal Header
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: const BoxDecoration(
@@ -1713,8 +1893,6 @@ class _CodeExpertScreenState extends State<CodeExpertScreen> {
                 ],
               ),
             ),
-
-            // Logs Area
             Expanded(
               child: ListView.builder(
                 controller: _scroll,
@@ -1737,8 +1915,7 @@ class _CodeExpertScreenState extends State<CodeExpertScreen> {
                 },
               ),
             ),
-
-            // Input Area
+            _buildQuickChips(),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: const BoxDecoration(
@@ -1779,22 +1956,942 @@ class _CodeExpertScreenState extends State<CodeExpertScreen> {
   }
 }
 
-class PDFScreen extends StatelessWidget {
-  const PDFScreen({super.key});
+// =============================================================================
+// 🔥 9. VOICE ASSISTANT (SMART BILINGUAL)
+// =============================================================================
+
+class VoiceScreen extends StatefulWidget {
+  const VoiceScreen({super.key});
   @override
-  Widget build(BuildContext context) => const ProPageLayout(
-      title: "PDF Tools",
-      icon: Icons.picture_as_pdf,
-      child: Center(child: Text("Coming Soon")));
+  State<VoiceScreen> createState() => _VoiceScreenState();
 }
 
-class TemplatesScreen extends StatelessWidget {
+class _VoiceScreenState extends State<VoiceScreen>
+    with SingleTickerProviderStateMixin {
+  late stt.SpeechToText _speech;
+  final FlutterTts _tts = FlutterTts();
+  final AIBrain _brain = AIBrain();
+
+  bool _isSessionActive = false;
+  bool _isListening = false;
+  bool _isProcessing = false;
+
+  String _text = "Tap Orb to speak / बात करें";
+  String _aiResponse = "";
+  late AnimationController _animController;
+
+  @override
+  void initState() {
+    super.initState();
+    _speech = stt.SpeechToText();
+    _brain.initBrain();
+    _initTTS();
+
+    _animController = AnimationController(
+        vsync: this,
+        duration: const Duration(milliseconds: 1000),
+        lowerBound: 0.8,
+        upperBound: 1.1);
+
+    _tts.setCompletionHandler(() {
+      if (_isSessionActive && mounted) {
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (_isSessionActive && mounted) _listen();
+        });
+      }
+    });
+  }
+
+  Future<void> _initTTS() async {
+    await _tts.setPitch(1.0);
+    await _tts.setSpeechRate(0.5);
+    await _tts.setLanguage("en-US");
+  }
+
+  void _toggleSession() {
+    if (_isSessionActive) {
+      _stopSession();
+    } else {
+      _startSession();
+    }
+  }
+
+  void _startSession() async {
+    bool available = await _speech.initialize(
+      onError: (val) => _handleError(),
+    );
+
+    if (available) {
+      setState(() {
+        _isSessionActive = true;
+        _aiResponse = "";
+        _text = "Listening... / सुन रहा हूँ...";
+      });
+      _animController.repeat(reverse: true);
+      _listen();
+    }
+  }
+
+  void _stopSession() {
+    setState(() {
+      _isSessionActive = false;
+      _isListening = false;
+      _isProcessing = false;
+      _text = "Tap Orb to speak / बात करें";
+      _animController.stop();
+      _animController.value = 1.0;
+    });
+    _speech.stop();
+    _tts.stop();
+  }
+
+  void _listen() {
+    if (!_isSessionActive) return;
+    setState(() => _isListening = true);
+
+    _speech.listen(
+      onResult: (val) {
+        setState(() {
+          _text = val.recognizedWords;
+          if (val.finalResult) {
+            _processVoice(_text);
+          }
+        });
+      },
+      listenFor: const Duration(seconds: 10),
+      pauseFor: const Duration(seconds: 2),
+    );
+  }
+
+  void _handleError() {
+    if (_isSessionActive) {
+      _speakSmart("Sorry, please say that again.");
+    }
+  }
+
+  void _processVoice(String query) async {
+    _speech.stop();
+    setState(() {
+      _isListening = false;
+      _isProcessing = true;
+    });
+
+    if (query.trim().isEmpty) {
+      _handleError();
+      return;
+    }
+
+    String prompt = """
+    You are a helpful AI assistant.
+    USER SAID: "$query"
+    
+    INSTRUCTIONS:
+    1. **DETECT LANGUAGE:** If user spoke in Hindi, reply in **Hindi**. If English, reply in **English**.
+    2. **ACCURACY:** Provide real/accurate info. If unknown, say you don't know.
+    3. **LENGTH:** Keep it short (2-3 sentences).
+    4. **TONE:** Friendly and professional.
+    """;
+
+    String? res = await _brain.askLaravel(prompt);
+
+    if (!mounted) return;
+
+    setState(() {
+      _isProcessing = false;
+      _aiResponse = res ?? "Connection Error.";
+    });
+
+    await _speakSmart(_aiResponse);
+  }
+
+  Future<void> _speakSmart(String text) async {
+    bool isHindi = text.contains(RegExp(r'[\u0900-\u097F]'));
+
+    if (isHindi) {
+      await _tts.setLanguage("hi-IN");
+    } else {
+      await _tts.setLanguage("en-US");
+    }
+
+    await _tts.speak(text);
+  }
+
+  @override
+  void dispose() {
+    _speech.stop();
+    _tts.stop();
+    _animController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ProPageLayout(
+      title: "Voice Assistant",
+      icon: Icons.mic,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Container(
+            decoration: BoxDecoration(
+                gradient: RadialGradient(colors: [
+              _isSessionActive
+                  ? AppColors.primaryAccent.withOpacity(0.15)
+                  : Colors.transparent,
+              Colors.transparent
+            ], radius: 0.8)),
+          ),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Text(
+                  _text,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.outfit(
+                      color: _isListening
+                          ? AppColors.primaryAccent
+                          : Colors.white70,
+                      fontSize: 22,
+                      fontWeight:
+                          _isListening ? FontWeight.bold : FontWeight.normal),
+                ),
+              ),
+              const SizedBox(height: 50),
+              GestureDetector(
+                onTap: _toggleSession,
+                child: ScaleTransition(
+                  scale: _animController,
+                  child: Container(
+                    height: 140,
+                    width: 140,
+                    decoration:
+                        BoxDecoration(shape: BoxShape.circle, boxShadow: [
+                      BoxShadow(
+                          color: _isSessionActive
+                              ? (_isProcessing
+                                  ? Colors.purpleAccent.withOpacity(0.6)
+                                  : AppColors.primaryAccent.withOpacity(0.5))
+                              : Colors.grey.withOpacity(0.2),
+                          blurRadius: _isSessionActive ? 40 : 10,
+                          spreadRadius: _isSessionActive ? 5 : 2)
+                    ]),
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Image.asset("assets/orb.gif", fit: BoxFit.cover),
+                        if (_isProcessing)
+                          const CircularProgressIndicator(color: Colors.white),
+                        if (!_isSessionActive)
+                          const Icon(Icons.touch_app,
+                              color: Colors.white54, size: 40),
+                        if (_isSessionActive && !_isProcessing && !_isListening)
+                          const Icon(Icons.mic_off,
+                              color: Colors.white30, size: 30)
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 50),
+              if (_aiResponse.isNotEmpty)
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  margin: const EdgeInsets.symmetric(horizontal: 20),
+                  decoration: BoxDecoration(
+                      color: AppColors.cardSurface,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: AppColors.borderSubtle)),
+                  child: Text(
+                    _aiResponse,
+                    textAlign: TextAlign.center,
+                    style:
+                        GoogleFonts.outfit(color: Colors.white, fontSize: 18),
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// =============================================================================
+// 🔥 10. PDF INTELLIGENCE (DOCUMIND PRO)
+// =============================================================================
+
+class PDFScreen extends StatefulWidget {
+  const PDFScreen({super.key});
+  @override
+  State<PDFScreen> createState() => _PDFScreenState();
+}
+
+class _PDFScreenState extends State<PDFScreen> {
+  final TextEditingController _ctrl = TextEditingController();
+  final ScrollController _scroll = ScrollController();
+  final AIBrain _brain = AIBrain();
+
+  String _pdfText = "";
+  String _fileName = "";
+  bool _isLoading = false;
+
+  final List<Map<String, String>> _messages = [
+    {
+      "role": "ai",
+      "msg":
+          "Select a PDF document to analyze. I can summarize it, extract code, or answer questions."
+    }
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _brain.initBrain();
+  }
+
+  Future<void> _pickPDF() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf'],
+    );
+
+    if (result != null) {
+      setState(() {
+        _isLoading = true;
+        _fileName = result.files.single.name;
+        _messages.add({"role": "user", "msg": "📂 Uploaded: $_fileName"});
+      });
+
+      try {
+        File file = File(result.files.single.path!);
+        List<int> bytes = await file.readAsBytes();
+        PdfDocument document = PdfDocument(inputBytes: bytes);
+        String text = PdfTextExtractor(document).extractText();
+        document.dispose();
+
+        setState(() {
+          _pdfText = text;
+          _isLoading = false;
+        });
+
+        _askAI("Summarize this document in 3 bullet points.");
+      } catch (e) {
+        setState(() {
+          _isLoading = false;
+          _messages.add({
+            "role": "ai",
+            "msg": "Error reading PDF. Please try a simpler file."
+          });
+        });
+      }
+    }
+  }
+
+  void _askAI(String query) async {
+    if (query.trim().isEmpty) return;
+
+    if (_pdfText.isEmpty) {
+      setState(() {
+        _messages.add({"role": "user", "msg": query});
+        _messages.add({"role": "ai", "msg": "Please upload a PDF first! 📂"});
+      });
+      return;
+    }
+
+    setState(() {
+      _messages.add({"role": "user", "msg": query});
+      _isLoading = true;
+      _ctrl.clear();
+    });
+    _scrollToBottom();
+
+    String prompt = """
+    CONTEXT FROM PDF DOCUMENT:
+    $_pdfText
+    
+    USER QUESTION: "$query"
+    
+    INSTRUCTIONS:
+    1. Answer ONLY based on the PDF context provided above.
+    2. If the answer is not in the PDF, say "This information is not in the document."
+    3. Keep answers professional and concise.
+    4. If asked for code, extract it exactly as written in the PDF.
+    """;
+
+    String? res = await _brain.askLaravel(prompt);
+
+    setState(() {
+      _isLoading = false;
+      _messages.add({"role": "ai", "msg": res ?? "Connection Error."});
+    });
+    _scrollToBottom();
+  }
+
+  void _scrollToBottom() {
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (_scroll.hasClients) _scroll.jumpTo(_scroll.position.maxScrollExtent);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ProPageLayout(
+      title: "DocuMind PDF",
+      icon: Icons.picture_as_pdf_rounded,
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+                color: AppColors.cardSurface,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.borderSubtle)),
+            child: Row(
+              children: [
+                Icon(Icons.description,
+                    color: _fileName.isEmpty ? Colors.grey : Colors.redAccent),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    _fileName.isEmpty ? "No PDF Selected" : _fileName,
+                    style: TextStyle(
+                        color: _fileName.isEmpty ? Colors.grey : Colors.white,
+                        fontWeight: FontWeight.bold),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                ElevatedButton.icon(
+                  onPressed: _pickPDF,
+                  icon: const Icon(Icons.upload_file,
+                      size: 18, color: Colors.black),
+                  label: const Text("Upload",
+                      style: TextStyle(
+                          color: Colors.black, fontWeight: FontWeight.bold)),
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryAccent),
+                )
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                color: const Color(0xFF0D0D0D),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: ListView.builder(
+                controller: _scroll,
+                padding: const EdgeInsets.all(16),
+                itemCount: _messages.length,
+                itemBuilder: (context, index) {
+                  final msg = _messages[index];
+                  bool isAi = msg['role'] == 'ai';
+                  return Align(
+                    alignment:
+                        isAi ? Alignment.centerLeft : Alignment.centerRight,
+                    child: Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.all(12),
+                      constraints: BoxConstraints(
+                          maxWidth: MediaQuery.of(context).size.width * 0.75),
+                      decoration: BoxDecoration(
+                          color: isAi
+                              ? AppColors.cardSurface
+                              : AppColors.primaryAccent.withOpacity(0.2),
+                          borderRadius: BorderRadius.only(
+                            topLeft: const Radius.circular(12),
+                            topRight: const Radius.circular(12),
+                            bottomLeft:
+                                isAi ? Radius.zero : const Radius.circular(12),
+                            bottomRight:
+                                isAi ? const Radius.circular(12) : Radius.zero,
+                          ),
+                          border: Border.all(
+                              color: isAi
+                                  ? Colors.white10
+                                  : AppColors.primaryAccent.withOpacity(0.5))),
+                      child: isAi
+                          ? SelectableText(
+                              msg['msg']!,
+                              style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                  height: 1.5),
+                            )
+                          : Text(
+                              msg['msg']!,
+                              style: GoogleFonts.outfit(
+                                  color: Colors.white, fontSize: 14),
+                            ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+          if (_isLoading)
+            const Padding(
+              padding: EdgeInsets.all(8.0),
+              child: LinearProgressIndicator(
+                  color: AppColors.primaryAccent, minHeight: 2),
+            ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            margin: const EdgeInsets.only(top: 10),
+            decoration: BoxDecoration(
+                color: AppColors.cardSurface,
+                borderRadius: BorderRadius.circular(30),
+                border: Border.all(color: AppColors.borderSubtle)),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _ctrl,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: const InputDecoration(
+                        hintText: "Ask something about this PDF...",
+                        hintStyle: TextStyle(color: Colors.white24),
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(horizontal: 16)),
+                    onSubmitted: (val) => _askAI(val),
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.send, color: AppColors.primaryAccent),
+                  onPressed: () => _askAI(_ctrl.text),
+                )
+              ],
+            ),
+          )
+        ],
+      ),
+    );
+  }
+}
+
+// =============================================================================
+// 🔥 11. CONTENT STUDIO (THE CREATOR SUITE)
+// =============================================================================
+
+class TemplatesScreen extends StatefulWidget {
   const TemplatesScreen({super.key});
   @override
-  Widget build(BuildContext context) => const ProPageLayout(
-      title: "Templates",
-      icon: Icons.copy,
-      child: Center(child: Text("Templates")));
+  State<TemplatesScreen> createState() => _TemplatesScreenState();
+}
+
+class _TemplatesScreenState extends State<TemplatesScreen> {
+  final List<Map<String, dynamic>> _tools = [
+    {
+      "id": "blog",
+      "title": "Blog Writer",
+      "icon": Icons.article_rounded,
+      "color": Colors.orangeAccent,
+      "desc": "SEO optimized full blog posts.",
+      "chips": [
+        "AI in 2026",
+        "Healthy Diet Tips",
+        "Flutter vs React",
+        "Space Travel",
+        "Digital Marketing",
+        "Passive Income",
+        "Cyber Security",
+        "Remote Work"
+      ],
+      "prompt":
+          "Write a professional, SEO-optimized blog post about: [TOPIC]. Include a catchy title, introduction, 3 main headings, and a conclusion."
+    },
+    {
+      "id": "youtube",
+      "title": "YouTube Kit",
+      "icon": Icons.play_circle_fill,
+      "color": Colors.redAccent,
+      "desc": "Viral description & hashtags.",
+      "chips": [
+        "Gaming Setup Tour",
+        "Coding Tutorial",
+        "Vlog: Day in Life",
+        "Tech Review",
+        "Comedy Skit",
+        "Fitness Routine",
+        "Travel Guide",
+        "Cooking Recipe"
+      ],
+      "prompt":
+          "Write a VIRAL YouTube Video Description for: [TOPIC]. \nREQUIREMENTS:\n1. Catchy Hook in first line.\n2. Detailed summary (3-4 lines).\n3. 'Don't forget to Subscribe' CTA.\n4. EXACTLY 10 High-Ranking Hashtags at the end."
+    },
+    {
+      "id": "insta",
+      "title": "Insta Captions",
+      "icon": Icons.camera_alt,
+      "color": Colors.purpleAccent,
+      "desc": "Engaging captions & emojis.",
+      "chips": [
+        "Sunset Vibes",
+        "Gym Motivation",
+        "Coffee Date",
+        "New Car",
+        "Coding Life",
+        "Throwback Thursday",
+        "Outfit of the Day",
+        "Monday Motivation"
+      ],
+      "prompt":
+          "Write 3 different Instagram Caption options (Funny, Inspirational, Short) for: [TOPIC]. Include relevant emojis and 15 hashtags."
+    },
+    {
+      "id": "email",
+      "title": "Cold Email",
+      "icon": Icons.email,
+      "color": Colors.blueAccent,
+      "desc": "Professional business emails.",
+      "chips": [
+        "Job Application",
+        "Freelance Proposal",
+        "Sales Pitch",
+        "Meeting Request",
+        "Follow Up",
+        "Resignation",
+        "Collaboration",
+        "Sponsorship"
+      ],
+      "prompt":
+          "Write a professional Cold Email for: [TOPIC]. Keep it concise, persuasive, and polite. Include a Subject Line."
+    },
+    {
+      "id": "twitter",
+      "title": "X / Twitter",
+      "icon": Icons.alternate_email,
+      "color": Colors.lightBlueAccent,
+      "desc": "Viral threads & tweets.",
+      "chips": [
+        "Tech Trends",
+        "Startup Advice",
+        "Crypto News",
+        "Life Hack",
+        "Coding Tip",
+        "Political Opinion",
+        "Joke",
+        "Motivational Quote"
+      ],
+      "prompt":
+          "Write a viral Twitter Thread (5 tweets) about: [TOPIC]. Use a hook in the first tweet. Keep sentences short and punchy."
+    },
+    {
+      "id": "linkedin",
+      "title": "LinkedIn Pro",
+      "icon": Icons.business_center,
+      "color": Colors.blue[800],
+      "desc": "Thought leadership posts.",
+      "chips": [
+        "Career Update",
+        "Project Launch",
+        "Leadership Lesson",
+        "Hiring Alert",
+        "Industry Analysis",
+        "Achievement",
+        "Work Culture",
+        "Event Experience"
+      ],
+      "prompt":
+          "Write a professional LinkedIn post about: [TOPIC]. Tone: Professional yet engaging. Use bullet points and a call to action."
+    },
+    {
+      "id": "script",
+      "title": "Reels Script",
+      "icon": Icons.movie_creation,
+      "color": Colors.pinkAccent,
+      "desc": "60-sec video scripts.",
+      "chips": [
+        "Tech Tip",
+        "Funny Skit",
+        "Educational Fact",
+        "Product Teaser",
+        "Life Advice",
+        "Behind the Scenes",
+        "Dance Challenge",
+        "Storytime"
+      ],
+      "prompt":
+          "Write a 60-second Reels/TikTok script for: [TOPIC]. Format: \n[0-5s] Hook\n[5-45s] Content/Value\n[45-60s] Call to Action."
+    },
+  ];
+
+  void _openGenerator(BuildContext context, Map<String, dynamic> tool) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ContentGeneratorScreen(tool: tool),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ProPageLayout(
+      title: "Content Studio",
+      icon: Icons.auto_awesome_mosaic,
+      child: GridView.builder(
+        padding: const EdgeInsets.only(bottom: 20),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
+          childAspectRatio: 0.85,
+        ),
+        itemCount: _tools.length,
+        itemBuilder: (context, index) {
+          final tool = _tools[index];
+          return GestureDetector(
+            onTap: () => _openGenerator(context, tool),
+            child: Container(
+              decoration: BoxDecoration(
+                  color: AppColors.cardSurface,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColors.borderSubtle),
+                  boxShadow: [
+                    BoxShadow(
+                      color: (tool['color'] as Color).withOpacity(0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    )
+                  ]),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: (tool['color'] as Color).withOpacity(0.2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(tool['icon'], color: tool['color'], size: 32),
+                  ),
+                  const SizedBox(height: 15),
+                  Text(
+                    tool['title'],
+                    style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 5),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: Text(
+                      tool['desc'],
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.grey[400], fontSize: 12),
+                    ),
+                  )
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+// =============================================================================
+// 🧠 THE GENERATOR SCREEN (REUSABLE FOR ALL TOOLS)
+// =============================================================================
+
+class ContentGeneratorScreen extends StatefulWidget {
+  final Map<String, dynamic> tool;
+  const ContentGeneratorScreen({super.key, required this.tool});
+
+  @override
+  State<ContentGeneratorScreen> createState() => _ContentGeneratorScreenState();
+}
+
+class _ContentGeneratorScreenState extends State<ContentGeneratorScreen> {
+  final TextEditingController _ctrl = TextEditingController();
+  final AIBrain _brain = AIBrain();
+  String _result = "";
+  bool _loading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _brain.initBrain();
+  }
+
+  void _generate() async {
+    if (_ctrl.text.isEmpty) return;
+    FocusScope.of(context).unfocus();
+
+    setState(() {
+      _loading = true;
+      _result = "";
+    });
+
+    String rawPrompt = widget.tool['prompt'];
+    String finalPrompt = rawPrompt.replaceAll("[TOPIC]", _ctrl.text);
+
+    String? res = await _brain.askLaravel(finalPrompt);
+
+    setState(() {
+      _loading = false;
+      _result = res ?? "Failed to generate content. Please try again.";
+    });
+  }
+
+  void _copyToClipboard() {
+    if (_result.isNotEmpty) {
+      Clipboard.setData(ClipboardData(text: _result));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Content Copied to Clipboard! 📋")),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Color themeColor = widget.tool['color'];
+
+    return Scaffold(
+      backgroundColor: AppColors.background, // Fixed: Uses 'background' alias
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: Text(widget.tool['title'],
+            style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("What should I write about?",
+                      style: TextStyle(color: Colors.grey[400])),
+                  const SizedBox(height: 10),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    decoration: BoxDecoration(
+                        color: AppColors.cardSurface,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: themeColor.withOpacity(0.5))),
+                    child: TextField(
+                      controller: _ctrl,
+                      style: const TextStyle(color: Colors.white, fontSize: 18),
+                      maxLines: 3,
+                      minLines: 1,
+                      decoration: const InputDecoration(
+                        border: InputBorder.none,
+                        hintText: "Enter topic (e.g., Future of AI)",
+                        hintStyle: TextStyle(color: Colors.white24),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Text("Quick Ideas:",
+                      style: TextStyle(color: Colors.grey[400], fontSize: 12)),
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children:
+                        (widget.tool['chips'] as List<String>).map((chip) {
+                      return ActionChip(
+                        label: Text(chip),
+                        backgroundColor: AppColors.cardSurface,
+                        labelStyle: TextStyle(
+                            color: themeColor, fontWeight: FontWeight.bold),
+                        side: BorderSide(color: themeColor.withOpacity(0.3)),
+                        onPressed: () {
+                          _ctrl.text = chip;
+                        },
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 30),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: _loading ? null : _generate,
+                      icon: _loading
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2, color: Colors.white))
+                          : const Icon(Icons.auto_awesome, color: Colors.white),
+                      label: Text(
+                          _loading ? " WRITING MAGIC..." : "GENERATE CONTENT",
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16)),
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: themeColor,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12))),
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+                  if (_result.isNotEmpty)
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppColors.cardSurface,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: AppColors.borderSubtle),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(children: [
+                                Icon(Icons.check_circle,
+                                    color: themeColor, size: 18),
+                                const SizedBox(width: 8),
+                                const Text("AI Output",
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold)),
+                              ]),
+                              IconButton(
+                                icon: const Icon(Icons.copy,
+                                    color: Colors.white70),
+                                onPressed: _copyToClipboard,
+                                tooltip: "Copy Text",
+                              )
+                            ],
+                          ),
+                          const Divider(color: Colors.white10),
+                          SelectableText(
+                            _result,
+                            style: GoogleFonts.outfit(
+                                color: Colors.white.withOpacity(0.9),
+                                fontSize: 16,
+                                height: 1.5),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class UpgradeScreen extends StatelessWidget {
@@ -1914,11 +3011,11 @@ class ModernChatBubble extends StatelessWidget {
                     fontSize: 16))
           else
             ...parts.map((part) {
-              if (parts.indexOf(part) % 2 == 0)
+              if (parts.indexOf(part) % 2 == 0) {
                 return Text(part,
                     style:
                         GoogleFonts.outfit(color: Colors.white, fontSize: 16));
-              else
+              } else {
                 return Container(
                     width: double.infinity,
                     margin: const EdgeInsets.symmetric(vertical: 8),
@@ -1930,6 +3027,7 @@ class ModernChatBubble extends StatelessWidget {
                     child: SelectableText.rich(
                         CodeHighlighter.highlight(part.trim()),
                         style: GoogleFonts.firaCode(fontSize: 14)));
+              }
             })
         ]),
       ),
@@ -1945,15 +3043,16 @@ class CodeHighlighter {
         multiLine: true);
     int lastMatchEnd = 0;
     for (var match in tokenRegex.allMatches(code)) {
-      if (match.start > lastMatchEnd)
+      if (match.start > lastMatchEnd) {
         spans.add(TextSpan(
             text: code.substring(lastMatchEnd, match.start),
             style: const TextStyle(color: AppColors.vsNormal)));
+      }
       String token = match.group(0)!;
       Color color = AppColors.vsNormal;
-      if (match.group(1) != null)
+      if (match.group(1) != null) {
         color = AppColors.vsComment;
-      else if (match.group(2) != null)
+      } else if (match.group(2) != null)
         color = AppColors.vsString;
       else if (match.group(3) != null)
         color = AppColors.vsKeyword;
@@ -1961,10 +3060,11 @@ class CodeHighlighter {
       spans.add(TextSpan(text: token, style: TextStyle(color: color)));
       lastMatchEnd = match.end;
     }
-    if (lastMatchEnd < code.length)
+    if (lastMatchEnd < code.length) {
       spans.add(TextSpan(
           text: code.substring(lastMatchEnd),
           style: const TextStyle(color: AppColors.vsNormal)));
+    }
     return TextSpan(children: spans);
   }
 }

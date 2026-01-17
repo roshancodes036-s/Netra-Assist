@@ -8,28 +8,58 @@
 .atom/
 .buildlog/
 .history
-.svn/
-# IntelliJ
+.idea
 .idea/
-.idea/modules.xml
-.idea/workspace.xml
-.idea/libraries/
-*.iws
-# Visual Studio Code
+.project
+.settings/
+.tmpr
 .vscode/
-# Flutter/Dart/Pub
-.dart_tool/
-.packages
-.pub-cache/
+Thumbs.db
 build/
-# Android
-.gradle
-**/local.properties
-**/key.properties
-# iOS
-.symlinks/
+node_modules/
+npm-debug.log
+
+# Flutter/Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
 /ios/Pods/
 /ios/Flutter/App.framework
-/ios/Flutter/Flutter.framework
-# Web
-/web/
+/ios/Flutter/engine
+/ios/Flutter/flutter_assets
+/ios/Flutter/ephemeral
+/ios/Flutter/.ios
+/ios/Runner/GeneratedPluginRegistrant.h
+/ios/Runner/GeneratedPluginRegistrant.m
+/ios/Runner/GoogleService-Info.plist
+/ios/Runner.xcworkspace
+*.apk
+*.aab
+*.app
+*.ipa
+/android/app/src/main/assets/flutter_assets
+/android/key.properties
+/android/local.properties
+/android/.gradle
+/android/gradle.bat
+/android/gradlew
+/android/app/build
+/android/app/google-services.json
+/android/gradle/
+/android/build/
+/android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java
+
+# Sensitive
+firebase.json
+*.keystore
+*credentials.json
+*service_account.json
+*serviceAccountKey.json
+secrets.dart
+lib/secrets.dart
+.env
+.firebase/
+firebase-debug.log
+CodeNetra_AI.apk
