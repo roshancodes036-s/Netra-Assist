@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:google_generative_ai/google_generative_ai.dart';
+import 'dart:developer' as developer;
 
 class AIBrain {
   // ✅ Apni API Key yahan rakhein
@@ -19,9 +20,9 @@ class AIBrain {
       );
       _chat = _model.startChat();
       _isInitialized = true;
-      print("✅ CodeNetra Brain: ACTIVE (Model: gemini-2.5-flash)");
+      developer.log("✅ CodeNetra Brain: ACTIVE (Model: gemini-2.5-flash)");
     } catch (e) {
-      print("❌ Brain Error: $e");
+      developer.log("❌ Brain Error: $e");
     }
   }
 
@@ -55,7 +56,7 @@ class AIBrain {
       // Text + Image data
       final content = Content.multi([
         TextPart(prompt.isEmpty
-            ? "Explain this image in detail." + _systemInstruction
+            ? "Explain this image in detail.$_systemInstruction"
             : prompt + _systemInstruction),
         DataPart('image/jpeg',
             imageBytes), // Gemini 2.5 Images ko natively samajhta hai
