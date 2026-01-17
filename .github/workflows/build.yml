@@ -13,31 +13,38 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # जावा सेटअप (Java Setup) - यह बिल्ड एरर को रोकता है
+      # 1. Java 17 Setup (Standard for 2025-26)
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
 
+      # 2. Latest Flutter (वर्ज़न नंबर हटा दिया है ताकि जो लेटेस्ट हो वही मिले)
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.19.0'
           channel: 'stable'
+          # flutter-version लाइन हटा दी है ताकि GitHub लेटेस्ट वर्ज़न खुद उठाए
+
+      # 3. Fix Tablet/Windows Line Endings (यह सबसे जरुरी फिक्स है)
+      - name: Fix Line Endings & Permissions
+        run: |
+          sudo apt-get install -y dos2unix
+          dos2unix android/gradlew
+          chmod +x android/gradlew
 
       - name: Get Dependencies
         run: flutter pub get
 
-      # यह सबसे जरूरी लाइन है (Fix Permissions)
-      - name: Make Gradlew Executable
-        run: chmod +x android/gradlew
-
+      # 4. Build with Verbose (ताकि अगर फेल हो तो हमें असली कारण दिखे)
       - name: Build APK (Debug)
-        run: flutter build apk --debug --no-sound-null-safety
+        run: flutter build apk --debug --no-sound-null-safety --verbose
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: codenetra-debug-apk
           path: build/app/outputs/flutter-apk/app-debug.apk
+
+
