@@ -1333,7 +1333,7 @@ class _StatusBadgeState extends State<StatusBadge>
 }
 
 // =============================================================================
-// 🔥 6. LIVE VISION PRO (ROAD SAFETY & CURRENCY MODE)
+// 🔥 6. LIVE VISION PRO (FINAL: MINI LENS + ROAD SAFETY)
 // =============================================================================
 
 class LiveCameraScreen extends StatefulWidget {
@@ -1384,6 +1384,7 @@ class _LiveCameraScreenState extends State<LiveCameraScreen> {
   }
 
   void _startFastAnalysisLoop() {
+    // Speed: 2.5 seconds
     _timer = Timer.periodic(const Duration(milliseconds: 2500), (timer) {
       if (!_isProcessing && mounted) {
         _captureAndAnalyze();
@@ -1396,20 +1397,18 @@ class _LiveCameraScreenState extends State<LiveCameraScreen> {
 
     try {
       setState(() => _isProcessing = true);
-
       final image = await _controller!.takePicture();
 
+      // ✅ Prompt me Safety + Currency dono add kiya
       String prompt = """
-      You are a visual assistant for a blind person walking on the road. Act fast.
+      You are a visual assistant for a blind person.
       ANALYZE PRIORITY:
-      1. **DANGER:** Incoming vehicles (Car/Bike from Left/Right), open manholes, or obstacles? Warn immediately.
-      2. **CURRENCY:** If you see money, state the exact value (e.g., '500 रुपये का नोट').
-      3. **OBJECTS:** If safe, briefly name the main object in front.
+      1. **DANGER:** Car, Bike, Pit, Fire, Obstacle? Warn immediately.
+      2. **CURRENCY:** Identify Note value (e.g. 500 Rupees).
+      3. **OBJECT:** Name the main object.
       
-      OUTPUT RULES:
-      - Reply in **SHUDH HINDI**.
-      - Keep it under 6-8 words for speed.
-      - Examples: "सावधान, बायीं ओर से कार आ रही है", "सामने एक गाय खड़ी है", "यह 100 रुपये का नोट है".
+      OUTPUT: SHUDH HINDI (Max 6 words).
+      Examples: "सावधान, कार आ रही है", "यह 500 रुपये का नोट है".
       """;
 
       String? res = await _brain.askWithImage(prompt, File(image.path));
@@ -1419,7 +1418,6 @@ class _LiveCameraScreenState extends State<LiveCameraScreen> {
           _desc = res;
           _isProcessing = false;
         });
-
         await _tts.speak(res);
       }
     } catch (e) {
@@ -1447,81 +1445,104 @@ class _LiveCameraScreenState extends State<LiveCameraScreen> {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
           return Stack(
-            fit: StackFit.expand,
             children: [
-              CameraPreview(_controller!),
-              Container(
-                decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                      Colors.transparent,
-                      Colors.black.withOpacity(0.9),
-                    ],
-                        stops: const [
-                      0.5,
-                      1.0
-                    ])),
+              // 1. FULL SCREEN CAMERA
+              SizedBox(
+                height: double.infinity,
+                width: double.infinity,
+                child: CameraPreview(_controller!),
               ),
+
+              // 2. BOTTOM BLACK PANEL (Solid Black)
               Positioned(
-                bottom: 30,
-                left: 20,
-                right: 20,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      _desc,
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.outfit(
-                          color: _desc.contains("सावधान") ||
-                                  _desc.contains("Car") ||
-                                  _desc.contains("Bike")
-                              ? Colors.redAccent
-                              : Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          shadows: [
-                            const Shadow(color: Colors.black, blurRadius: 10)
-                          ]),
-                    ),
-                    const SizedBox(height: 20),
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 500),
-                      height: _isProcessing ? 70 : 80,
-                      width: _isProcessing ? 70 : 80,
-                      decoration:
-                          BoxDecoration(shape: BoxShape.circle, boxShadow: [
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Container(
+                  padding: const EdgeInsets.only(
+                      top: 20, bottom: 30, left: 20, right: 20),
+                  decoration: const BoxDecoration(
+                      color: Colors.black, // ✅ PURE BLACK BACKGROUND
+                      borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(30),
+                          topRight: Radius.circular(30)),
+                      boxShadow: [
                         BoxShadow(
-                            color: _desc.contains("सावधान")
-                                ? Colors.red.withOpacity(0.6)
-                                : AppColors.primaryAccent.withOpacity(0.4),
-                            blurRadius: 30,
+                            color: Colors.black54,
+                            blurRadius: 20,
                             spreadRadius: 5)
                       ]),
-                      child: Image.asset("assets/orb.gif", fit: BoxFit.cover),
-                    ),
-                    const SizedBox(height: 10),
-                    const Text(
-                      "Live Tracking Active",
-                      style: TextStyle(
-                          color: Colors.white54,
-                          fontSize: 10,
-                          letterSpacing: 2),
-                    )
-                  ],
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // RESULT TEXT (With Red Alert Logic)
+                      Text(
+                        _desc,
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.outfit(
+                            // ✅ DANGER COLOR LOGIC ADDED
+                            color: _desc.contains("सावधान") ||
+                                    _desc.contains("Car")
+                                ? Colors.redAccent
+                                : Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold),
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      // ✅ MINI LENS ORB (With Red Glow Logic)
+                      Container(
+                        height: 80,
+                        width: 80,
+                        decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.black,
+                            boxShadow: [
+                              BoxShadow(
+                                  // ✅ DANGER GLOW LOGIC ADDED
+                                  color: _desc.contains("सावधान")
+                                      ? Colors.red.withOpacity(0.8)
+                                      : (_isProcessing
+                                          ? Colors.purpleAccent.withOpacity(0.6)
+                                          : AppColors.primaryAccent
+                                              .withOpacity(0.4)),
+                                  blurRadius: 30,
+                                  spreadRadius: 5)
+                            ]),
+                        child: ClipOval(
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              Image.asset("assets/orb.gif",
+                                  fit: BoxFit.cover, height: 80, width: 80),
+                              if (_isProcessing)
+                                const CircularProgressIndicator(
+                                    color: Colors.white, strokeWidth: 2),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 10),
+                      Text("AI Vision Active",
+                          style:
+                              TextStyle(color: Colors.white38, fontSize: 10)),
+                    ],
+                  ),
                 ),
               ),
+
+              // 3. BACK BUTTON
               Positioned(
                 top: 40,
                 left: 10,
-                child: IconButton(
-                  icon: const Icon(Icons.arrow_back,
-                      color: Colors.white, size: 30),
-                  onPressed: () => Navigator.pop(context),
+                child: CircleAvatar(
+                  backgroundColor: Colors.black54,
+                  child: IconButton(
+                    icon: const Icon(Icons.arrow_back, color: Colors.white),
+                    onPressed: () => Navigator.pop(context),
+                  ),
                 ),
               )
             ],
@@ -1957,7 +1978,7 @@ class _CodeExpertScreenState extends State<CodeExpertScreen> {
 }
 
 // =============================================================================
-// 🔥 9. VOICE ASSISTANT (SMART BILINGUAL)
+// 🔥 9. VOICE ASSISTANT (PURE BLACK - NO GLOW - ONLY ZOOM)
 // =============================================================================
 
 class VoiceScreen extends StatefulWidget {
@@ -1987,11 +2008,13 @@ class _VoiceScreenState extends State<VoiceScreen>
     _brain.initBrain();
     _initTTS();
 
+    // ✅ ANIMATION: Thoda Slow aur Smooth Zoom Effect
     _animController = AnimationController(
         vsync: this,
-        duration: const Duration(milliseconds: 1000),
-        lowerBound: 0.8,
-        upperBound: 1.1);
+        duration: const Duration(milliseconds: 1500),
+        lowerBound: 0.9, // Thoda sa chhota hoga
+        upperBound: 1.05 // Thoda sa bada hoga (Pulse effect)
+        );
 
     _tts.setCompletionHandler(() {
       if (_isSessionActive && mounted) {
@@ -2009,11 +2032,10 @@ class _VoiceScreenState extends State<VoiceScreen>
   }
 
   void _toggleSession() {
-    if (_isSessionActive) {
+    if (_isSessionActive)
       _stopSession();
-    } else {
+    else
       _startSession();
-    }
   }
 
   void _startSession() async {
@@ -2027,6 +2049,7 @@ class _VoiceScreenState extends State<VoiceScreen>
         _aiResponse = "";
         _text = "Listening... / सुन रहा हूँ...";
       });
+      // ✅ Start Zoom Animation
       _animController.repeat(reverse: true);
       _listen();
     }
@@ -2038,6 +2061,7 @@ class _VoiceScreenState extends State<VoiceScreen>
       _isListening = false;
       _isProcessing = false;
       _text = "Tap Orb to speak / बात करें";
+      // ✅ Stop Animation
       _animController.stop();
       _animController.value = 1.0;
     });
@@ -2069,6 +2093,7 @@ class _VoiceScreenState extends State<VoiceScreen>
     }
   }
 
+  // 🔥 IDENTITY & FEATURES LOGIC
   void _processVoice(String query) async {
     _speech.stop();
     setState(() {
@@ -2081,15 +2106,60 @@ class _VoiceScreenState extends State<VoiceScreen>
       return;
     }
 
+    String lowerQuery = query.toLowerCase();
+
+    // 🌍 Language Detection
+    bool isHindi = lowerQuery.contains("kisne") ||
+        lowerQuery.contains("kya") ||
+        lowerQuery.contains("banaya") ||
+        lowerQuery.contains("kaise") ||
+        lowerQuery.contains("sakte") ||
+        lowerQuery.contains("tum") ||
+        lowerQuery.contains("namaste");
+
+    // =========================================================
+    // 🚀 CUSTOM IDENTITY CHECK
+    // =========================================================
+
+    // 1️⃣ Who made you?
+    if (lowerQuery.contains("who made you") ||
+        lowerQuery.contains("kisne banaya") ||
+        lowerQuery.contains("creator") ||
+        lowerQuery.contains("developer")) {
+      String reply = isHindi
+          ? "मैं CodeNetra AI हूँ। मुझे रोशन चौरसिया ने बनाया है, ताकि मैं नेत्रहीनों के लिए डिजिटल आँखें बन सकूँ।"
+          : "I am CodeNetra AI, engineered by Roshan Chaurasiya to act as digital eyes for the visually impaired.";
+
+      setState(() {
+        _isProcessing = false;
+        _aiResponse = reply;
+      });
+      await _speakSmart(reply);
+      return;
+    }
+
+    // 2️⃣ What can you do?
+    if (lowerQuery.contains("what can you do") ||
+        lowerQuery.contains("kya kar sakte ho") ||
+        lowerQuery.contains("tum kya ho")) {
+      String reply = isHindi
+          ? "मैं एक सुपर असिस्टेंट हूँ। मैं देख सकता हूँ, पढ़ सकता हूँ, नोट पहचान सकता हूँ और कोडिंग में मदद कर सकता हूँ।"
+          : "I am a Super Assistant. I can see objects, read documents, detect currency, and help with coding.";
+
+      setState(() {
+        _isProcessing = false;
+        _aiResponse = reply;
+      });
+      await _speakSmart(reply);
+      return;
+    }
+    // =========================================================
+
+    // 3️⃣ Normal API Call
     String prompt = """
     You are a helpful AI assistant.
     USER SAID: "$query"
-    
-    INSTRUCTIONS:
-    1. **DETECT LANGUAGE:** If user spoke in Hindi, reply in **Hindi**. If English, reply in **English**.
-    2. **ACCURACY:** Provide real/accurate info. If unknown, say you don't know.
-    3. **LENGTH:** Keep it short (2-3 sentences).
-    4. **TONE:** Friendly and professional.
+    INSTRUCTIONS: Detect Language ($query). Keep it short (2 sentences).
     """;
 
     String? res = await _brain.askLaravel(prompt);
@@ -2129,97 +2199,104 @@ class _VoiceScreenState extends State<VoiceScreen>
     return ProPageLayout(
       title: "Voice Assistant",
       icon: Icons.mic,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Container(
-            decoration: BoxDecoration(
-                gradient: RadialGradient(colors: [
-              _isSessionActive
-                  ? AppColors.primaryAccent.withOpacity(0.15)
-                  : Colors.transparent,
-              Colors.transparent
-            ], radius: 0.8)),
-          ),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Text(
-                  _text,
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.outfit(
-                      color: _isListening
-                          ? AppColors.primaryAccent
-                          : Colors.white70,
-                      fontSize: 22,
-                      fontWeight:
-                          _isListening ? FontWeight.bold : FontWeight.normal),
+      child: Container(
+        color: Colors.black, // ✅ Z-BLACK BACKGROUND
+        width: double.infinity,
+        height: double.infinity,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Text(
+                    _text,
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.outfit(
+                        color: _isListening
+                            ? AppColors.primaryAccent
+                            : Colors.white,
+                        fontSize: 22,
+                        fontWeight:
+                            _isListening ? FontWeight.bold : FontWeight.normal),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 50),
-              GestureDetector(
-                onTap: _toggleSession,
-                child: ScaleTransition(
-                  scale: _animController,
-                  child: Container(
-                    height: 140,
-                    width: 140,
-                    decoration:
-                        BoxDecoration(shape: BoxShape.circle, boxShadow: [
-                      BoxShadow(
-                          color: _isSessionActive
-                              ? (_isProcessing
-                                  ? Colors.purpleAccent.withOpacity(0.6)
-                                  : AppColors.primaryAccent.withOpacity(0.5))
-                              : Colors.grey.withOpacity(0.2),
-                          blurRadius: _isSessionActive ? 40 : 10,
-                          spreadRadius: _isSessionActive ? 5 : 2)
-                    ]),
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        Image.asset("assets/orb.gif", fit: BoxFit.cover),
-                        if (_isProcessing)
-                          const CircularProgressIndicator(color: Colors.white),
-                        if (!_isSessionActive)
-                          const Icon(Icons.touch_app,
-                              color: Colors.white54, size: 40),
-                        if (_isSessionActive && !_isProcessing && !_isListening)
-                          const Icon(Icons.mic_off,
-                              color: Colors.white30, size: 30)
-                      ],
+
+                const SizedBox(height: 40),
+
+                // 🔥 ORB SECTION (NO SHADOW / NO NEON)
+                GestureDetector(
+                  onTap: _toggleSession,
+                  child: ScaleTransition(
+                    scale: _animController, // ✅ Sirf Zoom In/Out Animation
+                    child: Container(
+                      height: 350,
+                      width: 350,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.transparent, // ✅ Piche koi light nahi
+                        // ❌ REMOVED: BoxShadow remove kar diya gaya hai
+                      ),
+                      child: ClipOval(
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            // Orb Image (Black Background wala GIF hona chahiye)
+                            Image.asset("assets/orb.gif",
+                                fit: BoxFit.cover, height: 350, width: 350),
+
+                            if (_isProcessing)
+                              const CircularProgressIndicator(
+                                  color: Colors.white, strokeWidth: 3),
+
+                            // Icons inside Orb
+                            if (!_isSessionActive)
+                              const Icon(Icons.touch_app,
+                                  color: Colors.white54, size: 60),
+
+                            if (_isSessionActive &&
+                                !_isProcessing &&
+                                !_isListening)
+                              const Icon(Icons.mic_off,
+                                  color: Colors.white30, size: 50)
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 50),
-              if (_aiResponse.isNotEmpty)
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  margin: const EdgeInsets.symmetric(horizontal: 20),
-                  decoration: BoxDecoration(
-                      color: AppColors.cardSurface,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: AppColors.borderSubtle)),
-                  child: Text(
-                    _aiResponse,
-                    textAlign: TextAlign.center,
-                    style:
-                        GoogleFonts.outfit(color: Colors.white, fontSize: 18),
+
+                const SizedBox(height: 40),
+
+                if (_aiResponse.isNotEmpty)
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    margin: const EdgeInsets.symmetric(horizontal: 20),
+                    decoration: BoxDecoration(
+                        color: const Color(0xFF111111),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                            color: AppColors.borderSubtle.withOpacity(0.5))),
+                    child: Text(
+                      _aiResponse,
+                      textAlign: TextAlign.center,
+                      style:
+                          GoogleFonts.outfit(color: Colors.white, fontSize: 18),
+                    ),
                   ),
-                ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
 // =============================================================================
-// 🔥 10. PDF INTELLIGENCE (DOCUMIND PRO)
+// 🔥 10. PDF INTELLIGENCE (WEB FIX + IDENTITY MODE + CHIPS)
 // =============================================================================
 
 class PDFScreen extends StatefulWidget {
@@ -2237,11 +2314,14 @@ class _PDFScreenState extends State<PDFScreen> {
   String _fileName = "";
   bool _isLoading = false;
 
+  // ✅ Suggested Chips
+  List<String> _suggestedChips = [];
+
   final List<Map<String, String>> _messages = [
     {
       "role": "ai",
       "msg":
-          "Select a PDF document to analyze. I can summarize it, extract code, or answer questions."
+          "Select a PDF document. I will analyze it and give you quick suggestions."
     }
   ];
 
@@ -2251,54 +2331,91 @@ class _PDFScreenState extends State<PDFScreen> {
     _brain.initBrain();
   }
 
+  // ✅ UNIVERSAL PDF PICKER (WEB + MOBILE NO ERROR)
   Future<void> _pickPDF() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['pdf'],
-    );
+    try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf'],
+        withData: true, // ✅ IMPORTANT FOR WEB
+      );
 
-    if (result != null) {
-      setState(() {
-        _isLoading = true;
-        _fileName = result.files.single.name;
-        _messages.add({"role": "user", "msg": "📂 Uploaded: $_fileName"});
-      });
+      if (result != null) {
+        setState(() {
+          _isLoading = true;
+          _fileName = result.files.single.name;
+          _messages.add({"role": "user", "msg": "📂 Uploaded: $_fileName"});
+          _suggestedChips = [];
+        });
 
-      try {
-        File file = File(result.files.single.path!);
-        List<int> bytes = await file.readAsBytes();
-        PdfDocument document = PdfDocument(inputBytes: bytes);
+        // 🚀 SMART CHECK: WEB VS MOBILE
+        List<int> bytes;
+
+        if (kIsWeb) {
+          // 🌐 Web Logic
+          if (result.files.single.bytes != null) {
+            bytes = result.files.single.bytes!;
+          } else {
+            throw Exception("Web File bytes are null");
+          }
+        } else {
+          // 📱 Mobile Logic
+          if (result.files.single.path != null) {
+            File file = File(result.files.single.path!);
+            bytes = file.readAsBytesSync();
+          } else {
+            throw Exception("Mobile File path is null");
+          }
+        }
+
+        // 1. Extract Text
+        final PdfDocument document = PdfDocument(inputBytes: bytes);
         String text = PdfTextExtractor(document).extractText();
         document.dispose();
 
+        // 🔍 Check Empty
+        if (text.trim().isEmpty) {
+          setState(() {
+            _isLoading = false;
+            _messages.add({
+              "role": "ai",
+              "msg":
+                  "⚠️ This PDF seems to be an image (Scanned). Please upload a text-based PDF."
+            });
+          });
+          return;
+        }
+
+        // ✅ SUCCESS
         setState(() {
           _pdfText = text;
           _isLoading = false;
+          _suggestedChips = [
+            "📝 Summarize this",
+            "🔑 List Key Points",
+            "❓ What is the conclusion?",
+            "📅 Find all dates",
+            "📧 Extract Emails"
+          ];
         });
 
         _askAI("Summarize this document in 3 bullet points.");
-      } catch (e) {
-        setState(() {
-          _isLoading = false;
-          _messages.add({
-            "role": "ai",
-            "msg": "Error reading PDF. Please try a simpler file."
-          });
-        });
       }
+    } catch (e) {
+      print("🔴 PDF ERROR: $e");
+      setState(() {
+        _isLoading = false;
+        _messages.add({
+          "role": "ai",
+          "msg": "Error reading PDF. Please ensure it's a valid file."
+        });
+      });
     }
   }
 
+  // 🔥 IDENTITY MODE + PDF CHAT
   void _askAI(String query) async {
     if (query.trim().isEmpty) return;
-
-    if (_pdfText.isEmpty) {
-      setState(() {
-        _messages.add({"role": "user", "msg": query});
-        _messages.add({"role": "ai", "msg": "Please upload a PDF first! 📂"});
-      });
-      return;
-    }
 
     setState(() {
       _messages.add({"role": "user", "msg": query});
@@ -2307,26 +2424,116 @@ class _PDFScreenState extends State<PDFScreen> {
     });
     _scrollToBottom();
 
+    String lowerQuery = query.toLowerCase();
+
+    // 🌍 Language Detection
+    bool isHindi = lowerQuery.contains("kisne") ||
+        lowerQuery.contains("kya") ||
+        lowerQuery.contains("banaya") ||
+        lowerQuery.contains("kaise") ||
+        lowerQuery.contains("sakte") ||
+        lowerQuery.contains("tum") ||
+        lowerQuery.contains("namaste");
+
+    // =========================================================
+    // 🚀 CUSTOM IDENTITY CHECK
+    // =========================================================
+
+    // 1️⃣ Who made you?
+    if (lowerQuery.contains("who made you") ||
+        lowerQuery.contains("kisne banaya") ||
+        lowerQuery.contains("creator") ||
+        lowerQuery.contains("developer")) {
+      await Future.delayed(const Duration(seconds: 1));
+
+      String reply = isHindi
+          ? """
+मैं **CodeNetra AI** हूँ, एक एडवांस इंटेलिजेंस सिस्टम जिसे **रोशन चौरसिया** ने बनाया है।
+मेरा निर्माण **Flutter** और **Generative AI** की अत्याधुनिक तकनीक से हुआ है।
+"""
+          : """
+I am **CodeNetra AI**, an advanced intelligence system engineered by **Roshan Chaurasiya**.
+Built with **Flutter** and **Generative AI**, my mission is to empower visually impaired users.
+""";
+
+      setState(() {
+        _isLoading = false;
+        _messages.add({"role": "ai", "msg": reply});
+      });
+      _scrollToBottom();
+      return;
+    }
+
+    // 2️⃣ What can you do?
+    if (lowerQuery.contains("what can you do") ||
+        lowerQuery.contains("kya kar sakte ho") ||
+        lowerQuery.contains("tum kya ho")) {
+      await Future.delayed(const Duration(seconds: 1));
+
+      String reply = isHindi
+          ? """
+मैं **CodeNetra AI** हूँ। मेरी मुख्य शक्तियां ये हैं:
+
+1. **📄 DocuMind (PDF मास्टर):** मैं किसी भी PDF को पढ़कर उसका निचोड़ (Summary) निकाल सकता हूँ।
+2. **👁️ नेत्रा विजन:** मैं नेत्रहीनों के लिए 'डिजिटल आँखें' बनकर खतरों को पहचानता हूँ।
+3. **🗣️ वॉइस असिस्टेंट:** आप मुझसे हिंदी या इंग्लिश में बात कर सकते हैं।
+4. **💻 कोड एक्सपर्ट:** मैं मुश्किल प्रोग्रामिंग कोड को समझा सकता हूँ।
+
+बताइए, इस PDF में मैं क्या ढूंढूं?
+"""
+          : """
+I am **CodeNetra AI**. Here is my capability suite:
+
+1. **📄 DocuMind:** I can read, analyze, and summarize complex PDF documents.
+2. **👁️ Netra Vision:** I act as 'Digital Eyes' for the visually impaired.
+3. **🗣️ Voice Commander:** I support hands-free interaction.
+4. **💻 Code Expert:** I can explain complex programming logic.
+""";
+
+      setState(() {
+        _isLoading = false;
+        _messages.add({"role": "ai", "msg": reply});
+      });
+      _scrollToBottom();
+      return;
+    }
+    // =========================================================
+
+    // 2. CHECK PDF
+    if (_pdfText.isEmpty) {
+      setState(() {
+        _isLoading = false;
+        _messages.add({
+          "role": "ai",
+          "msg": isHindi
+              ? "कृपया पहले कोई PDF अपलोड करें! 📂"
+              : "Please upload a PDF first! 📂"
+        });
+      });
+      return;
+    }
+
+    // 3. API CALL
     String prompt = """
-    CONTEXT FROM PDF DOCUMENT:
+    CONTEXT FROM PDF:
     $_pdfText
     
     USER QUESTION: "$query"
     
     INSTRUCTIONS:
-    1. Answer ONLY based on the PDF context provided above.
-    2. If the answer is not in the PDF, say "This information is not in the document."
-    3. Keep answers professional and concise.
-    4. If asked for code, extract it exactly as written in the PDF.
+    1. Answer ONLY based on the PDF context.
+    2. Detect user language ($query). If Hindi, answer in Hindi.
     """;
 
     String? res = await _brain.askLaravel(prompt);
 
-    setState(() {
-      _isLoading = false;
-      _messages.add({"role": "ai", "msg": res ?? "Connection Error."});
-    });
-    _scrollToBottom();
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+        _messages.add({"role": "ai", "msg": res ?? "Connection Error."});
+      });
+      _scrollToBottom();
+    }
   }
 
   void _scrollToBottom() {
@@ -2342,6 +2549,7 @@ class _PDFScreenState extends State<PDFScreen> {
       icon: Icons.picture_as_pdf_rounded,
       child: Column(
         children: [
+          // 1. TOP BAR
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
@@ -2375,7 +2583,10 @@ class _PDFScreenState extends State<PDFScreen> {
               ],
             ),
           ),
+
           const SizedBox(height: 10),
+
+          // 2. CHAT LIST
           Expanded(
             child: Container(
               decoration: BoxDecoration(
@@ -2413,34 +2624,56 @@ class _PDFScreenState extends State<PDFScreen> {
                               color: isAi
                                   ? Colors.white10
                                   : AppColors.primaryAccent.withOpacity(0.5))),
-                      child: isAi
-                          ? SelectableText(
-                              msg['msg']!,
-                              style: GoogleFonts.outfit(
-                                  color: Colors.white,
-                                  fontSize: 14,
-                                  height: 1.5),
-                            )
-                          : Text(
-                              msg['msg']!,
-                              style: GoogleFonts.outfit(
-                                  color: Colors.white, fontSize: 14),
-                            ),
+                      child: SelectableText(
+                        msg['msg']!,
+                        style: GoogleFonts.outfit(
+                            color: Colors.white, fontSize: 14, height: 1.5),
+                      ),
                     ),
                   );
                 },
               ),
             ),
           ),
+
           if (_isLoading)
             const Padding(
               padding: EdgeInsets.all(8.0),
               child: LinearProgressIndicator(
                   color: AppColors.primaryAccent, minHeight: 2),
             ),
+
+          // 3. CHIPS
+          if (_suggestedChips.isNotEmpty && !_isLoading)
+            Container(
+              height: 50,
+              margin: const EdgeInsets.symmetric(vertical: 5),
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                itemCount: _suggestedChips.length,
+                itemBuilder: (context, index) {
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8.0),
+                    child: ActionChip(
+                      label: Text(_suggestedChips[index]),
+                      labelStyle:
+                          const TextStyle(color: Colors.white, fontSize: 12),
+                      backgroundColor: AppColors.cardSurface,
+                      side: BorderSide(
+                          color: AppColors.primaryAccent.withOpacity(0.5)),
+                      shape: const StadiumBorder(),
+                      onPressed: () => _askAI(_suggestedChips[index]),
+                    ),
+                  );
+                },
+              ),
+            ),
+
+          // 4. INPUT
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            margin: const EdgeInsets.only(top: 10),
+            margin: const EdgeInsets.only(top: 5),
             decoration: BoxDecoration(
                 color: AppColors.cardSurface,
                 borderRadius: BorderRadius.circular(30),
