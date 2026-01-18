@@ -1,6 +1,8 @@
 
 # Miscellaneous
 *.class
+*.db
+*.jar
 *.log
 *.pyc
 *.swp
@@ -8,58 +10,52 @@
 .atom/
 .buildlog/
 .history
-.idea
-.idea/
-.project
-.settings/
-.tmpr
-.vscode/
-Thumbs.db
-build/
-node_modules/
-npm-debug.log
+.svn/
 
 # Flutter/Dart
 .dart_tool/
 .flutter-plugins
 .flutter-plugins-dependencies
+.packages
 .pub-cache/
 .pub/
-/ios/Pods/
-/ios/Flutter/App.framework
-/ios/Flutter/engine
-/ios/Flutter/flutter_assets
-/ios/Flutter/ephemeral
-/ios/Flutter/.ios
-/ios/Runner/GeneratedPluginRegistrant.h
-/ios/Runner/GeneratedPluginRegistrant.m
-/ios/Runner/GoogleService-Info.plist
-/ios/Runner.xcworkspace
-*.apk
-*.aab
-*.app
-*.ipa
-/android/app/src/main/assets/flutter_assets
-/android/key.properties
-/android/local.properties
-/android/.gradle
-/android/gradle.bat
-/android/gradlew
-/android/app/build
-/android/app/google-services.json
-/android/gradle/
-/android/build/
-/android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java
+/build/
+!/build/app/outputs/flutter-apk/
+!/build/app/outputs/flutter-apk/app-release.apk
 
-# Sensitive
-firebase.json
-*.keystore
-*credentials.json
-*service_account.json
-*serviceAccountKey.json
-secrets.dart
-lib/secrets.dart
-.env
-.firebase/
-firebase-debug.log
-CodeNetra_AI.apk
+# Android
+android/key.properties
+*.jks
+
+# iOS
+ios/Runner/GeneratedPluginRegistrant.h
+ios/Runner/GeneratedPluginRegistrant.m
+ios/Runner.xcworkspace/xcshareddata/
+ios/Runner.xcworkspace/xcuserdata/
+ios/Pods/
+ios/Podfile.lock
+.ios/
+
+# macOS
+macos/Flutter/ephemeral/
+macos/Pods/
+macos/Podfile.lock
+
+# Windows
+windows/flutter/ephemeral/
+windows/CMakeLists.txt.user
+windows/INSTALL.vcxproj.filters
+windows/ALL_BUILD.vcxproj.filters
+windows/flutter/flutter_wrapper_app.vcxproj.filters
+windows/flutter/flutter_wrapper_plugin.vcxproj.filters
+windows/runner/INSTALL.vcxproj.filters
+windows/runner/ALL_BUILD.vcxproj.filters
+windows/runner/Runner.vcxproj.filters
+windows/.vs/
+/windows/x64/
+
+# Linux
+linux/flutter/ephemeral/
+/linux/ephemeral/
+/linux/CMakeLists.txt.user
+/linux/compile_commands.json
