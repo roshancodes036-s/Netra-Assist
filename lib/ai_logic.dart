@@ -4,7 +4,7 @@ import 'dart:developer' as developer;
 
 class AIBrain {
   // ✅ Apni API Key yahan rakhein
-  static const String _apiKey = "AIzaSyDU9ylgbkt2399Kg8aWIjwFmfrg20V_6SI";
+  static const String _apiKey = "AIzaSyB_tuAVDkNGGkGzRflSnmDzl_SFm79ljRc";
 
   late GenerativeModel _model;
   late ChatSession _chat;
