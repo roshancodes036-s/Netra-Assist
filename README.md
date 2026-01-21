@@ -109,6 +109,7 @@ cd CodeNetra-Flutter-AI
 Sign up at Google AI Studio.
 Open lib/ai_logic.dart.
 Replace the placeholder with your key: const String _apiKey = 'YOUR_API_KEY_HERE';
+
 3. Install Dependencies:
 flutter pub get
 
@@ -120,6 +121,7 @@ Note: Requires Flutter 3.0+ and a physical device for Camera features.
 True Multimodality: We use Text, Images, Audio, and File Contexts all together.
 Real-World Speed: We utilize Gemini 3 Flash where speed matters (Blind Safety) and Gemini 3 Pro where depth matters (Coding).
 Social Good + Dev Tool: It solves a humanitarian problem (Blindness) while also being a powerful utility for developers.
+
 👨‍💻 Author
 Engineered by Roshan Chaurasiya (Lucknow, India).
 Built to showcase the power of Google Gemini 3.
