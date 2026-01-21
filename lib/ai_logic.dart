@@ -4,7 +4,7 @@ import 'dart:developer' as developer;
 
 class AIBrain {
   // ✅ User API Key Integration
-  static const String _apiKey = "AIzaSyB_tuAVDkNGGkGzRflSnmDzl_SFm79ljRc";
+  static const String _apiKey = "AIzaSyCmHTHVhsx-qlZonoKT--dk8eV645I8xl0";
 
   late GenerativeModel _model;
   late ChatSession _chat;
@@ -15,7 +15,7 @@ class AIBrain {
       _model = GenerativeModel(
         // 🔥 Gemini 3 Flash Preview (Hackathon Special)
         // High speed and low latency for Live Vision
-        model: 'gemini-3-flash-preview', 
+        model: 'gemini-3-flash-preview',
         apiKey: _apiKey,
       );
       _chat = _model.startChat();
@@ -59,7 +59,7 @@ class AIBrain {
         TextPart(prompt.isEmpty
             ? "Explain this image in detail for a visually impaired person.$_systemInstruction"
             : prompt + _systemInstruction),
-        DataPart('image/jpeg', imageBytes), 
+        DataPart('image/jpeg', imageBytes),
       ]);
 
       // Send to Gemini 3
