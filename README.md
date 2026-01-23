@@ -131,8 +131,6 @@ Universal Impact: It solves a humanitarian crisis (Blindness) while simultaneous
 👨‍💻 Author
 Engineered by Roshan Chaurasiya
 
-
 📍 Varanasi, India
-
 
 🚀 Built to showcase the power of Google Gemini 3.
