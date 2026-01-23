@@ -122,5 +122,10 @@ Hybrid Architecture: We use Flash for Speed (Safety) and Pro for Reasoning (Codi
 
 Universal Impact: It solves a humanitarian crisis (Blindness) while simultaneously offering a Next-Gen Productivity Tool for every developer.
 
-👨‍💻 Author
-Engineered by Roshan Chaurasiya Varanasi, India Built to showcase the power of Google Gemini 3.
+### 👨‍💻 Author
+**Engineered by Roshan Chaurasiya**
+<br>
+📍 *Varanasi, India*
+<br>
+🚀 *Built to showcase the power of Google Gemini 3.*
+
