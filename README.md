@@ -41,7 +41,7 @@ Technology leaves two massive groups behind:
 **CodeNetra AI** pushes the boundaries of what's possible with **Google's Gemini 3 models**. We leverage the full **Multimodal** and **Long Context** capabilities to create a tool that **Sees, Listens, and Codes**:
 
 * **⚡ Ultra-Fast Vision:** Using **Gemini 3 Flash** for real-time obstacle detection (latency < 500ms).
-* **🧠 Massive Context Reasoning:** Using **Gemini 3 Pro** to analyze entire project ZIP files and Git Repositories in seconds.
+* **🧠 Massive Context Reasoning:** Using **Gemini 3 Flash** to analyze entire project ZIP files and Git Repositories instantly using its 1M+ context window.
 * **🗣️ Natural Voice Interface:** A coding companion that explains complex bugs via audio, reducing eye strain for all developers.
 
 ---
@@ -78,7 +78,7 @@ A coding companion designed for **Blind Creators** AND **Pro Developers**:
     * **PDF Intelligence:** Summarizes physical documents instantly.
 
 ### 🅱️ Developer Suite (The Coding Brain)
-*Deep coding logic powered by Gemini 3 Pro.*
+*Deep coding logic powered by Gemini 3 Flash (High Reasoning + Speed).*
 
 * **🎨 UI to Code Pro (Multi-Engine Support):**
     * **4-Language Generation:** Unlike other tools, CodeNetra isn't limited to one language. Convert any screenshot into:
@@ -108,22 +108,31 @@ git clone [https://github.com/roshancodes036-sudo/CodeNetra-Flutter-AI.git](http
 cd CodeNetra-Flutter-AI
 
 2. Get Gemini 3 API Key:
+
 Sign up at Google AI Studio.
+
 Open lib/ai_logic.dart.
+
 Replace the placeholder with your key: const String _apiKey = 'YOUR_API_KEY_HERE';
 
 3. Install Dependencies & Run:
+
+Bash
+
 flutter pub get
 flutter run
-
 🏆 Why CodeNetra Wins the Gemini 3 Hackathon?
 True Multimodality: We seamlessly blend Vision, Voice, and Code generation.
-Hybrid Architecture: We use Flash for Speed (Safety) and Pro for Reasoning (Coding).
+
+Hybrid Architecture: We use Flash throughout for maximum Speed (Safety) and low-latency Reasoning (Coding).
+
 Universal Impact: It solves a humanitarian crisis (Blindness) while simultaneously offering a Next-Gen Productivity Tool for every developer.
 
 👨‍💻 Author
 Engineered by Roshan Chaurasiya
 
+
 📍 Varanasi, India
+
 
 🚀 Built to showcase the power of Google Gemini 3.
