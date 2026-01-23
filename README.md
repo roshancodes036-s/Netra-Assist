@@ -80,9 +80,14 @@ A coding companion designed for **Blind Creators** AND **Pro Developers**:
 ### 🅱️ Developer Suite (The Coding Brain)
 *Deep coding logic powered by Gemini 3 Pro.*
 
-* **🎨 UI to Code (Visual Interpreter):**
-    * **For Blind Devs:** Upload a wireframe -> Gemini generates code AND describes the UI layout in audio.
-    * **For Pro Devs:** Upload a screenshot -> Get **Pixel-Perfect Flutter/React Code** in seconds.
+* **🎨 UI to Code Pro (Multi-Engine Support):**
+    * **4-Language Generation:** Unlike other tools, CodeNetra isn't limited to one language. Convert any screenshot into:
+        * 🟢 **Flutter** (Mobile/Web)
+        * ⚛️ **React Native** (Cross-Platform)
+        * 🌐 **HTML + Tailwind** (Web Responsiveness)
+        * 🐍 **Python/Kivy** (Desktop Apps)
+    * **Smart Component Extraction:** The AI intelligently scans and separates **Styles, Layouts, and Logic** (as seen in the extraction pipeline).
+    * **Universal Access:** Provides audio descriptions of the UI layout for blind developers while generating code.
 
 * **📂 Repo Chat (Zip Intelligence):**
     * Upload a full Project `.zip`.
@@ -99,33 +104,26 @@ A coding companion designed for **Blind Creators** AND **Pro Developers**:
 
 **1. Clone the Repository:**
 ```bash
-git clone https://github.com/roshancodes036-sudo/CodeNetra-Flutter-AI.git
+git clone [https://github.com/roshancodes036-sudo/CodeNetra-Flutter-AI.git](https://github.com/roshancodes036-sudo/CodeNetra-Flutter-AI.git)
 cd CodeNetra-Flutter-AI
 
 2. Get Gemini 3 API Key:
-
 Sign up at Google AI Studio.
-
 Open lib/ai_logic.dart.
-
 Replace the placeholder with your key: const String _apiKey = 'YOUR_API_KEY_HERE';
 
 3. Install Dependencies & Run:
-
 flutter pub get
 flutter run
 
 🏆 Why CodeNetra Wins the Gemini 3 Hackathon?
 True Multimodality: We seamlessly blend Vision, Voice, and Code generation.
-
 Hybrid Architecture: We use Flash for Speed (Safety) and Pro for Reasoning (Coding).
-
 Universal Impact: It solves a humanitarian crisis (Blindness) while simultaneously offering a Next-Gen Productivity Tool for every developer.
 
-### 👨‍💻 Author
-**Engineered by Roshan Chaurasiya**
-<br>
-📍 *Varanasi, India*
-<br>
-🚀 *Built to showcase the power of Google Gemini 3.*
+👨‍💻 Author
+Engineered by Roshan Chaurasiya
 
+📍 Varanasi, India
+
+🚀 Built to showcase the power of Google Gemini 3.
