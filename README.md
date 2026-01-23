@@ -112,3 +112,16 @@ Engineered by Roshan Chaurasiya
 Varanasi, India
 Built to showcase the power of Google Gemini 3.
 
+## 📸 App Screenshots (Dual-Mode Interface)
+
+### 1️⃣ The Dual Experience
+| 👁️ Netra Vision Mode | 💻 Developer Mode |
+| :---: | :---: |
+| <img src="netra_home.png" width="300"> | <img src="dev_home.png" width="300"> |
+| *High-Contrast UI for Visually Impaired* | *Productivity Suite for Developers* |
+
+### 2️⃣ Powerful Features (Gemini 3 Capabilities)
+| 🎨 UI to Code (Multimodal) | 🐞 Error Debugger (Reasoning) |
+| :---: | :---: |
+| <img src="ui_to_code.png" width="300"> | <img src="debugger.png" width="300"> |
+| *Convert Screenshots to Flutter Code* | *Fix Bugs using Stack Trace Analysis* |
