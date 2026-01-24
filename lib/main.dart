@@ -1783,7 +1783,7 @@ class _CodeExpertScreenState extends State<CodeExpertScreen> {
   final TextEditingController _ctrl = TextEditingController();
   final List<String> _logs = [
     "> CodeNetra Expert System Initialized...",
-    "> Connected to Gemini 2.5 Flash...",
+    "> Connected to Gemini 3 Flash...",
     "> Waiting for developer query...",
   ];
   final ScrollController _scroll = ScrollController();

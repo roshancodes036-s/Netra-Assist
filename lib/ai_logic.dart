@@ -4,7 +4,7 @@ import 'dart:developer' as developer;
 
 class AIBrain {
   // ✅ User API Key Integration
-  static const String _apiKey = "AIzaSyCmHTHVhsx-qlZonoKT--dk8eV645I8xl0";
+  static const String _apiKey = "AIzaSyDNg4wIhluuWQ1tQUy6re2M7JQ-9ApAsVs";
 
   late GenerativeModel _model;
   late ChatSession _chat;
@@ -36,7 +36,7 @@ class AIBrain {
       if (!_isInitialized) initBrain();
 
       // Message + Hidden Instruction
-      final content = Content.text(prompt + _systemInstruction);
+      final content = Content.text(prompt.isNotEmpty ? prompt + _systemInstruction : "Hello" + _systemInstruction);
 
       final response = await _chat.sendMessage(content);
       return response.text;
@@ -46,7 +46,6 @@ class AIBrain {
   }
 
   // 🔥 2. IMAGE + TEXT CHAT (Camera/Gallery)
-  // Gemini 3 Flash processes images extremely fast for real-time feedback
   Future<String?> askWithImage(String prompt, File imageFile) async {
     try {
       if (!_isInitialized) initBrain();
