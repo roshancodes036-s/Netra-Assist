@@ -8,24 +8,6 @@
 
 ---
 
-## 📸 App Screenshots (Dual-Mode Interface)
-
-### 1️⃣ The Dual Experience
-| 👁️ Netra Vision Mode | 💻 Developer Mode |
-| :---: | :---: |
-| <img src="netra_home.png" width="300"> | <img src="dev_home.png" width="300"> |
-| *High-Contrast UI for Visually Impaired* | *Productivity Suite for Developers* |
-
-### 2️⃣ Powerful Features (Gemini 3 Capabilities)
-| 🎨 UI to Code (Multimodal) | 🐞 Error Debugger (Reasoning) |
-| :---: | :---: |
-| <img src="ui_to_code.png" width="300"> | <img src="debugger.png" width="300"> |
-| *Convert Screenshots to Flutter Code* | *Fix Bugs using Stack Trace Analysis* |
-
-> **📺 Watch Demo Video:** [Click Here to Watch on YouTube](YOUR_YOUTUBE_VIDEO_LINK_HERE)
-
----
-
 ## 🔍 The Double-Edged Problem (समस्या)
 Technology leaves two massive groups behind:
 1.  **Visually Impaired:** Over **20 million people** in India face daily physical dangers and are excluded from the digital economy.
@@ -34,6 +16,8 @@ Technology leaves two massive groups behind:
 **CodeNetra AI** solves both by using **Gemini 3** to create a Universal Interface:
 * **For the Blind:** Digital Eyes for Safety.
 * **For Developers:** A Hands-Free, Multimodal Coding Superpower.
+
+> **📺 Watch Demo Video:** [Click Here to Watch on YouTube](YOUR_YOUTUBE_VIDEO_LINK_HERE)
 
 ---
 
@@ -86,7 +70,7 @@ A coding companion designed for **Blind Creators** AND **Pro Developers**:
         * ⚛️ **React Native** (Cross-Platform)
         * 🌐 **HTML + Tailwind** (Web Responsiveness)
         * 🐍 **Python/Kivy** (Desktop Apps)
-    * **Smart Component Extraction:** The AI intelligently scans and separates **Styles, Layouts, and Logic** (as seen in the extraction pipeline).
+    * **Smart Component Extraction:** The AI intelligently scans and separates **Styles, Layouts, and Logic**.
     * **Universal Access:** Provides audio descriptions of the UI layout for blind developers while generating code.
 
 * **📂 Repo Chat (Zip Intelligence):**
@@ -108,24 +92,17 @@ git clone [https://github.com/roshancodes036-sudo/CodeNetra-Flutter-AI.git](http
 cd CodeNetra-Flutter-AI
 
 2. Get Gemini 3 API Key:
-
 Sign up at Google AI Studio.
-
 Open lib/ai_logic.dart.
-
 Replace the placeholder with your key: const String _apiKey = 'YOUR_API_KEY_HERE';
 
 3. Install Dependencies & Run:
-
-Bash
-
 flutter pub get
 flutter run
+
 🏆 Why CodeNetra Wins the Gemini 3 Hackathon?
 True Multimodality: We seamlessly blend Vision, Voice, and Code generation.
-
 Hybrid Architecture: We use Flash throughout for maximum Speed (Safety) and low-latency Reasoning (Coding).
-
 Universal Impact: It solves a humanitarian crisis (Blindness) while simultaneously offering a Next-Gen Productivity Tool for every developer.
 
 👨‍💻 Author
@@ -134,3 +111,4 @@ Engineered by Roshan Chaurasiya
 📍 Varanasi, India
 
 🚀 Built to showcase the power of Google Gemini 3.
+
