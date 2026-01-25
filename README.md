@@ -114,11 +114,8 @@ git clone [https://github.com/roshancodes036-sudo/CodeNetra-Flutter-AI.git](http
 cd CodeNetra-Flutter-AI
 
 2. Get Gemini 3 API Key:
-
 Sign up at Google AI Studio.
-
 Open lib/ai_logic.dart (or your config file).
-
 Replace the placeholder with your key:
 const String _apiKey = 'YOUR_API_KEY_HERE';
 
