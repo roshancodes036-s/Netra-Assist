@@ -4,7 +4,7 @@ import 'dart:developer' as developer;
 
 class AIBrain {
   // ✅ User API Key Integration
-  static const String _apiKey = "AIzaSyDNg4wIhluuWQ1tQUy6re2M7JQ-9ApAsVs";
+  static const String _apiKey = "AIzaSyBPeCKbqIiZTeKHVGnngI_2LvTLp8bYLh4";
 
   late GenerativeModel _model;
   late ChatSession _chat;
@@ -36,7 +36,9 @@ class AIBrain {
       if (!_isInitialized) initBrain();
 
       // Message + Hidden Instruction
-      final content = Content.text(prompt.isNotEmpty ? prompt + _systemInstruction : "Hello" + _systemInstruction);
+      final content = Content.text(prompt.isNotEmpty
+          ? prompt + _systemInstruction
+          : "Hello" + _systemInstruction);
 
       final response = await _chat.sendMessage(content);
       return response.text;
