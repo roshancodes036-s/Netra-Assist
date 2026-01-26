@@ -7,9 +7,12 @@
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 
 ---
+## 🎥 Watch the Demo Video
+Click on the image below to watch CodeNetra in action! 👇
 
-## 🎬 App Screenshots & Demo
-> **Watch the Full Project in Action:** [🔴 Click Here to Watch on YouTube](YOUR_YOUTUBE_VIDEO_LINK_HERE)
+[![CodeNetra Demo](https://markdown-videos-api.jorgenkh.no/youtube/GucQ1pn_SCk)](https://www.youtube.com/watch?v=GucQ1pn_SCk)
+
+## 🎬 App Screenshots 
 
 | **👁️ Netra Vision Mode** | **💻 Developer Dashboard** |
 |:---:|:---:|
