@@ -1,137 +1,174 @@
-# 👁️ CodeNetra AI - Inclusive Developer Suite
-> **🏆 Built for Gemini 3 Hackathon** | *Bridging Accessibility & High-Speed Engineering*
+# 👁️ CodeNetra-AI — Inclusive Gemini Vision & Developer Intelligence Suite  
+> **Built for Gemini 3 Hackathon**  
+> *One platform. Two modes. Accessibility + Developer Productivity powered by Gemini 3.*
 
 ![Gemini 3](https://img.shields.io/badge/Powered%20by-Gemini%203.0-8E75B2?style=for-the-badge&logo=google&logoColor=white)
 ![Flutter](https://img.shields.io/badge/Made%20with-Flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white)
-![Status](https://img.shields.io/badge/Hackathon-Submission-FFCA28?style=for-the-badge)
+![Hackathon](https://img.shields.io/badge/Hackathon-Gemini%203%20Submission-FFCA28?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 
 ---
-## 🎥 Watch the Demo Video
-Click on the image below to watch CodeNetra in action! 👇
+
+## 🚀 What is CodeNetra-AI?
+
+**CodeNetra-AI is a dual-mode inclusive AI assistant powered by Gemini 3.**
+
+It is designed for two high-impact user groups:
+
+- 👁️ **Netra Vision Mode** — helping visually impaired users understand and navigate the world  
+- 💻 **Developer Mode** — helping developers code faster with AI debugging and UI-to-code tools  
+
+> **CodeNetra-AI demonstrates Gemini 3’s true multimodal power: Vision + Reasoning + Voice.**
+
+---
+
+## 🎥 Demo Video
+
+Click below to watch CodeNetra-AI in action:
 
 [![CodeNetra Demo](https://markdown-videos-api.jorgenkh.no/youtube/GucQ1pn_SCk)](https://www.youtube.com/watch?v=GucQ1pn_SCk)
 
-## 🎬 App Screenshots 
+---
 
-| **👁️ Netra Vision Mode** | **💻 Developer Dashboard** |
+## 🎬 Screenshots
+
+| 👁️ Netra Vision Mode | 💻 Developer Dashboard |
 |:---:|:---:|
-| <img src="netra_home.png" height="450"> | <img src="dev_home.png" height="450"> |
-| **Identifies Objects & Currency** | **Central Hub for Coding Tools** |
+| <img src="netra_home.png" height="430"> | <img src="dev_home.png" height="430"> |
+| Digital Eyes for Safety | AI Hub for Coding Tools |
 
-| **🎨 UI to Code Engine** | **🐞 AI Error Debugger** |
+| 🎨 UI → Code Engine | 🐞 AI Error Debugger |
 |:---:|:---:|
-| <img src="ui_to_code.png" height="450"> | <img src="debugger.png" height="450"> |
-| **Converts Design to Flutter Code** | **Fixes Logic Errors Instantly** |
+| <img src="ui_to_code.png" height="430"> | <img src="debugger.png" height="430"> |
+| Screenshot to Flutter/React Code | Fixes Errors Instantly |
 
 ---
 
-## 🔍 The Double-Edged Problem (समस्या)
-Technology leaves two massive groups behind:
-1.  **Visually Impaired:** Over **20 million people** in India face daily physical dangers and are excluded from the digital economy.
-2.  **Developers:** Professional coders face **burnout**, repetitive strain injuries (RSI), and waste hours manually converting UI designs to code.
+# 🌍 The Problem
 
-**CodeNetra AI** solves both by using **Gemini 3** to create a Universal Interface:
-* **For the Blind:** Digital Eyes for Safety.
-* **For Developers:** A Hands-Free, Multimodal Coding Superpower.
+Technology is leaving behind two major communities:
 
----
+### 👁️ Accessibility Gap  
+Millions of visually impaired people struggle with:
 
-## 🚀 The Gemini 3 Advantage (Why Gemini?)
-**CodeNetra AI** pushes the boundaries of what's possible with **Google's Gemini 3 models**. We leverage the full **Multimodal** and **Long Context** capabilities:
+- navigating safely  
+- reading documents  
+- understanding surroundings  
 
-* **⚡ Ultra-Fast Vision:** Using **Gemini 3 Flash** for real-time obstacle detection (latency < 500ms).
-* **🧠 Massive Context Reasoning:** Using **Gemini 3 Flash** to analyze entire project ZIP files (50+ files) instantly using its **1M+ context window**.
-* **🗣️ Natural Voice Interface:** A coding companion that explains complex bugs via audio, acting as a "Senior Engineer" on your shoulder.
+### 💻 Developer Productivity Gap  
+Developers waste hours on:
 
----
-
-## 🎯 Project Overview: A Dual-Mode Super App
-
-### 1. 👁️ Netra Vision Mode (Social Good)
-*Focused on Safety & Independence.*
-Acts as "Digital Eyes" for the visually impaired.
-* **Live Hazard Detection:** Identifies dangers (cars, pits) using video stream frames.
-* **Currency Recognition:** Identifies Indian Rupee notes with 99% accuracy.
-* **World Narrator:** Speaks out what is in front of the user using TTS.
-
-### 2. 💻 Developer Mode (Universal Engineering)
-*Focused on Productivity & Inclusion.*
-A coding companion designed for **Blind Creators** AND **Pro Developers**:
-* **Universal Design:** Helps blind users visualize UI through audio descriptions.
-* **Rapid Prototyping:** Converts whiteboard sketches/screenshots to Code instantly.
-* **Debug Assistant:** Finds errors in huge logs using deep reasoning.
-
-> **Impact:** In beta tests, it reduced debugging time by **40%** and enabled visually impaired users to write their first GUI application.
+- repetitive debugging  
+- converting UI designs into code  
+- understanding large repositories  
 
 ---
 
-## 🔥 Key Features & Technical Implementation
+# 💡 The Solution: One Suite, Two Modes
 
-### 🅰️ Netra Vision (Accessibility Suite)
-*Real-time safety powered by Gemini 3 Flash.*
+## 👁️ Netra Vision Mode (Primary Social Impact)
 
-* **🚗 Live Hazard Detection (Autopilot):**
-    * **Latency:** Optimized using Gemini 3's high-speed inference (sub-second response).
-    * **Action:** Triggers a **Red Alert UI** and speaks "सावधान!" (Caution!) instantly.
-    * **Tech:** Camera Stream -> Frame Capture -> Gemini Flash API -> TTS.
+CodeNetra acts as **Digital Eyes** powered by Gemini Vision:
 
-### 🅱️ Developer Suite (The Coding Brain)
-*Deep coding logic powered by Gemini 3 Flash (High Reasoning).*
+- 🚗 **Live Hazard Detection** (cars, obstacles, pits)
+- 💵 **Currency Recognition** (Indian Rupees)
+- 🗣️ **World Narrator** (real-time voice guidance)
+- 📄 **PDF Intelligence** (reads and explains documents)
+- ❓ **Visual Question Answering** using Gemini 3
 
-* **🎨 UI to Code Pro (Multi-Engine Support):**
-    * **4-Language Generation:** Converts any screenshot into:
-        * 🟢 **Flutter** (Mobile/Web)
-        * ⚛️ **React Native** (Cross-Platform)
-        * 🌐 **HTML + Tailwind** (Web Responsiveness)
-        * 🐍 **Python/Kivy** (Desktop Apps)
-    * **Smart Separation:** The AI intelligently separates **Styles, Layouts, and Logic**.
-
-* **📂 Repo Chat (Zip Intelligence):**
-    * **Context Window Magic:** Upload a full Project `.zip`. Gemini reads the structure, `pubspec.yaml`, and `lib` folder simultaneously.
-    * *Ask:* "Explain the authentication flow in this repo" – It acts as an instant Onboarding Buddy.
-
-* **🐞 Error Fixer Pro:**
-    * Gemini 3 understands the stack trace + code context and suggests the exact code patch.
+> Built to empower independence and safety.
 
 ---
 
-## 🛠️ Tech Stack
+## 💻 Developer Mode (Bonus Productivity Suite)
 
-| Component | Technology Used |
-| :--- | :--- |
-| **Frontend Framework** | Flutter (Dart) |
-| **AI Model** | **Google Gemini 3.0 Flash** |
-| **State Management** | Provider / GetX |
-| **Speech Services** | Flutter TTS & Speech-to-Text |
-| **Image Processing** | Image Picker & Camera Plugin |
-| **Backend/Storage** | Firebase (Optional integration) |
+A Gemini-powered coding assistant for creators and engineers:
+
+- 🎨 **UI-to-Code Generator**  
+  Converts screenshots into:
+  - Flutter  
+  - React Native  
+  - HTML + Tailwind  
+  - Python GUI  
+
+- 📂 **Repo Chat (ZIP Intelligence)**  
+  Upload an entire project `.zip` and ask:
+  > “Explain authentication flow”
+
+- 🐞 **AI Error Debugger**  
+  Fixes stack traces with reasoning + code context
+
+- 🎤 **Voice Coding Companion**  
+  Explains bugs using audio like a senior engineer
 
 ---
 
-## ⚡ How to Run
+# ⚡ Why Gemini 3?
 
-**1. Clone the Repository:**
+CodeNetra-AI is built specifically to showcase Gemini 3 strengths:
+
+- **Multimodal Vision Understanding**
+- **Long Context Reasoning (1M+ tokens)**
+- **Ultra-fast Flash responses**
+- **Voice-first accessibility interface**
+
+Gemini enables both:
+
+✅ real-world vision assistance  
+✅ deep code intelligence  
+
+---
+
+# ✨ What Makes CodeNetra-AI Unique?
+
+Unlike single-purpose AI apps, CodeNetra-AI combines:
+
+- Accessibility + Engineering Productivity  
+- Vision + Voice + Reasoning  
+- Social Impact + Developer Acceleration  
+
+> **An inclusive AI platform where accessibility meets innovation.**
+
+---
+
+# 🛠️ Tech Stack
+
+| Layer | Technology |
+|------|------------|
+| Frontend | Flutter (Dart) |
+| AI Model | Google Gemini 3 Flash |
+| Vision + Camera | Camera Plugin + Image Picker |
+| Voice | Speech-to-Text + Flutter TTS |
+| Backend (Optional) | Firebase |
+| Architecture | Modular Screens + Services + Widgets |
+
+---
+
+# ⚡ How to Run Locally
+
+### 1. Clone Repository
+
 ```bash
-git clone [https://github.com/roshancodes036-sudo/CodeNetra-Flutter-AI.git](https://github.com/roshancodes036-sudo/CodeNetra-Flutter-AI.git)
+git clone https://github.com/roshancodes036-sudo/CodeNetra-Flutter-AI.git
 cd CodeNetra-Flutter-AI
 
-2. Get Gemini 3 API Key:
-Sign up at Google AI Studio.
-Open lib/ai_logic.dart (or your config file).
-Replace the placeholder with your key:
-const String _apiKey = 'YOUR_API_KEY_HERE';
+2. Add Gemini API Key
 
-3. Install Dependencies & Run:
+Open:
+lib/ai_logic.dart
+
+Replace
+const String apiKey = "YOUR_API_KEY_HERE";
+
+3. Install & Run
 flutter pub get
 flutter run
 
 👨‍💻 Author
-Engineered by Roshan Chaurasiya
 
+Roshan Chaurasiya
 📍 Varanasi, India
 
-🚀 Built to showcase the power of Google Gemini 3.
-
+Built with ❤️ to showcase the real-world impact of Google Gemini 3.
 
 
