@@ -290,22 +290,77 @@ Unlike single-purpose AI apps, CodeNetra-AI combines:
 
 ---
 
-# 🔐 API Key & Security Note
+# 🔐 API Key & Security Setup (Important)
 
-For security reasons, the Gemini API key and Firebase configuration files are **not included** in this public repository.
+For security reasons, the Gemini API key logic is **not included** in this public repository.
 
-These files are safely excluded using `.gitignore`:
+### 🛠️ How to Fix & Run the App:
 
-- `lib/ai_logic.dart`
-- `firebase_options.dart`
-
-### To Run Locally:
-
-1. Create your own Gemini API key from Google AI Studio  
-2. Add it inside your local `ai_logic.dart` file:
+1. **Get API Key:** Get your free key from [Google AI Studio](https://aistudio.google.com/).
+2. **Create File:** Go to `lib/services/` folder and create a new file named **`ai_logic.dart`**.
+3. **Paste Code:** Copy and paste the following code into that file (Replace `YOUR_KEY` with your actual key):
 
 ```dart
-const String apiKey = "YOUR_API_KEY_HERE";
+import 'dart:io';
+import 'dart:typed_data';
+import 'package:google_generative_ai/google_generative_ai.dart';
+
+class AIBrain {
+  // 👇 PASTE YOUR API KEY HERE
+  static const String _apiKey = "PASTE_YOUR_API_KEY_HERE";
+
+  late GenerativeModel _model;
+  late ChatSession _chatSession;
+  bool _isInitialized = false;
+
+  AIBrain() {
+    initBrain();
+  }
+
+  void initBrain() {
+    try {
+      _model = GenerativeModel(model: 'gemini-1.5-flash', apiKey: _apiKey);
+      _chatSession = _model.startChat();
+      _isInitialized = true;
+    } catch (e) {
+      print("Brain Error: $e");
+    }
+  }
+
+  // 1. Text Chat
+  Future<String?> askLaravel(String prompt) async {
+    try {
+      if (!_isInitialized) initBrain();
+      final content = Content.text(prompt);
+      final response = await _chatSession.sendMessage(content);
+      return response.text;
+    } catch (e) {
+      return "Error: $e";
+    }
+  }
+  
+  // 2. Chat Helper
+   Future<String?> chat(String prompt) async {
+    return await askLaravel(prompt);
+  }
+
+  // 3. Image Analysis
+  Future<String?> askWithImage(String prompt, File imageFile) async {
+    try {
+      if (!_isInitialized) initBrain();
+      final imageBytes = await imageFile.readAsBytes();
+      final content = Content.multi([
+        TextPart(prompt),
+        DataPart('image/jpeg', imageBytes),
+      ]);
+      final response = await _model.generateContent([content]);
+      return response.text;
+    } catch (e) {
+      return "Vision Error: $e";
+    }
+  }
+}
+
 
 ⚡ Run Locally
 1. Clone Repository
