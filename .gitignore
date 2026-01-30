@@ -65,3 +65,4 @@ lib/firebase_options.dart
 **/firebase_options.dart
 =======
 >>>>>>> 832c7bd3bcb96f9109cb044a4194ff3dd0a9c4c9
+*.apk
