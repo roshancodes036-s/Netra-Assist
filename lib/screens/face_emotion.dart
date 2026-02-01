@@ -1,10 +1,11 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:camera/camera.dart'; // Camera Package
+import 'package:camera/camera.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+// Tumhare purane imports
 import '../theme/app_colors.dart';
 import '../services/ai_logic.dart';
 
@@ -16,20 +17,18 @@ class FaceEmotionScreen extends StatefulWidget {
 
 class _FaceEmotionScreenState extends State<FaceEmotionScreen>
     with SingleTickerProviderStateMixin {
-  // Camera & AI Variables
   CameraController? _controller;
   List<CameraDescription>? _cameras;
-  int _selectedCameraIdx = 0; // 0 = Back, 1 = Front
+  int _selectedCameraIdx = 0; // 0 = Back, 1 = Front (Default Back)
   
   final AIBrain _brain = AIBrain();
   final FlutterTts _tts = FlutterTts();
   
-  // Logic Variables
   bool _isProcessing = false;
   String _result = "Initializing Social Coach...";
   Timer? _timer;
 
-  // Animation Variables (Laser Scan)
+  // Animation Variables
   late AnimationController _animController;
   late Animation<double> _animation;
 
@@ -42,27 +41,27 @@ class _FaceEmotionScreenState extends State<FaceEmotionScreen>
     _setupAnimation();
   }
 
-  // 1. SETUP LASER ANIMATION
   void _setupAnimation() {
     _animController = AnimationController(
-      duration: const Duration(seconds: 2), // 2 Second scan speed
+      duration: const Duration(seconds: 2),
       vsync: this,
-    )..repeat(reverse: true); // Upar-Niche hota rahega
-
+    )..repeat(reverse: true);
     _animation = Tween<double>(begin: 0.0, end: 1.0).animate(_animController);
   }
 
-  // 2. ENGLISH VOICE SETUP
   Future<void> _setupVoice() async {
     await _tts.setLanguage("en-US");
     await _tts.setSpeechRate(0.5);
     await _tts.setPitch(1.0);
   }
 
-  // 3. CAMERA SETUP (Dual Support)
   Future<void> _initCamera() async {
     _cameras = await availableCameras();
+    // Default to Front Camera for Face/Emotion if available, else Back
     if (_cameras != null && _cameras!.isNotEmpty) {
+      // Find front camera index
+      int frontIndex = _cameras!.indexWhere((c) => c.lensDirection == CameraLensDirection.front);
+      _selectedCameraIdx = (frontIndex != -1) ? frontIndex : 0;
       _setCamera(_cameras![_selectedCameraIdx]);
     }
   }
@@ -81,24 +80,23 @@ class _FaceEmotionScreenState extends State<FaceEmotionScreen>
       await _controller!.initialize();
       if (mounted) {
         setState(() {});
-        _startAutoPilot(); // Camera chalu hote hi scanning shuru
+        _startAutoPilot();
       }
     } catch (e) {
       debugPrint("Camera Error: $e");
     }
   }
 
-  // 4. TOGGLE FRONT/BACK CAMERA
   void _switchCamera() {
     if (_cameras == null || _cameras!.length < 2) return;
     setState(() {
+      // Toggle Index: 0 -> 1, 1 -> 0
       _selectedCameraIdx = (_selectedCameraIdx == 0) ? 1 : 0;
       _result = "Switching Camera...";
     });
     _setCamera(_cameras![_selectedCameraIdx]);
   }
 
-  // 5. AUTO PILOT LOOP
   void _startAutoPilot() {
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
@@ -108,13 +106,11 @@ class _FaceEmotionScreenState extends State<FaceEmotionScreen>
     });
   }
 
-  // 6. THE SOCIAL COACH LOGIC (AI)
   Future<void> _scanFaceAndEmotion() async {
     try {
       setState(() => _isProcessing = true);
       final image = await _controller!.takePicture();
 
-      // --- EMOTION COACH PROMPT ---
       String prompt = """
       You are 'Netra', a Social Intelligence Coach for a blind person.
       Analyze the face in the image INSTANTLY.
@@ -123,9 +119,9 @@ class _FaceEmotionScreenState extends State<FaceEmotionScreen>
       [Emotion]: [Social Advice]
       
       RULES:
-      1. If ANGRY/UPSET: Say "He looks upset. Speak softly and ask what's wrong."
+      1. If ANGRY/UPSET: Say "He looks upset. Speak softly."
       2. If HAPPY/SMILING: Say "She looks happy. You can match her energy."
-      3. If SERIOUS/FOCUSED: Say "He looks serious. Keep the conversation professional."
+      3. If SERIOUS/FOCUSED: Say "He looks serious. Be professional."
       4. If NO FACE: Say "No face detected."
       
       Keep it under 15 words. Speak in English.
@@ -174,7 +170,7 @@ class _FaceEmotionScreenState extends State<FaceEmotionScreen>
             child: CameraPreview(_controller!),
           ),
 
-          // 2. LASER SCAN ANIMATION (The Cool Part)
+          // 2. LASER SCAN ANIMATION
           AnimatedBuilder(
             animation: _animation,
             builder: (context, child) {
@@ -183,10 +179,10 @@ class _FaceEmotionScreenState extends State<FaceEmotionScreen>
                 left: 0,
                 right: 0,
                 child: Container(
-                  height: 2, // Laser ki motai
+                  height: 2,
                   width: double.infinity,
                   decoration: BoxDecoration(
-                    color: Colors.greenAccent, // Neon Green Laser
+                    color: Colors.greenAccent,
                     boxShadow: [
                       BoxShadow(
                         color: Colors.greenAccent.withOpacity(0.8),
@@ -200,13 +196,13 @@ class _FaceEmotionScreenState extends State<FaceEmotionScreen>
             },
           ),
 
-          // 3. UI OVERLAY (Bottom)
+          // 3. UI OVERLAY (Bottom Text Panel)
           Positioned(
             bottom: 0,
             left: 0,
             right: 0,
             child: Container(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.only(top: 30, left: 20, right: 20, bottom: 30),
               decoration: const BoxDecoration(
                 color: Colors.black87,
                 borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
@@ -220,7 +216,7 @@ class _FaceEmotionScreenState extends State<FaceEmotionScreen>
                     textAlign: TextAlign.center,
                     style: GoogleFonts.outfit(
                       color: Colors.white,
-                      fontSize: 20, // Bada Text
+                      fontSize: 18,
                       fontWeight: FontWeight.bold
                     ),
                   ),
@@ -237,31 +233,37 @@ class _FaceEmotionScreenState extends State<FaceEmotionScreen>
             ),
           ),
 
-          // 4. TOP BUTTONS (Back & Switch Camera)
+          // 4. FLOATING CAMERA SWITCH BUTTON (Bottom Right - iPhone Style)
           Positioned(
-            top: 50,
-            left: 20,
+            bottom: 160, // Text box ke thoda upar
             right: 20,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // Back Button
-                CircleAvatar(
-                  backgroundColor: Colors.black54,
-                  child: IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Colors.white),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ),
-                // Switch Camera Button
-                FloatingActionButton.small(
-                  backgroundColor: AppColors.primaryAccent,
-                  onPressed: _switchCamera,
-                  child: const Icon(Icons.flip_camera_ios, color: Colors.black),
-                ),
-              ],
+            child: FloatingActionButton(
+              heroTag: "switch_cam",
+              backgroundColor: Colors.black.withOpacity(0.6), // Translucent Black
+              onPressed: _switchCamera,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(50),
+                side: const BorderSide(color: Colors.white38, width: 1)
+              ),
+              child: const Icon(Icons.cameraswitch_rounded, color: Colors.white, size: 28),
             ),
-          )
+          ),
+
+          // 5. BACK BUTTON (Top Left - Safe Area Fixed)
+          Positioned(
+            top: 50, // Thoda aur niche kiya taki status bar se bache
+            left: 20,
+            child: SafeArea(
+              child: CircleAvatar(
+                backgroundColor: Colors.black45,
+                radius: 22,
+                child: IconButton(
+                  icon: const Icon(Icons.arrow_back, color: Colors.white),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
