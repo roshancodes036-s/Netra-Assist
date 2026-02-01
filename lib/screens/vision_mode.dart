@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // HapticFeedback (Vibration) ke liye
 import 'package:camera/camera.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+// Tumhare purane imports (Inhe mat hatana)
 import '../theme/app_colors.dart';
 import '../services/ai_logic.dart';
 
@@ -18,78 +20,111 @@ class _LiveCameraScreenState extends State<LiveCameraScreen> {
   CameraController? _controller;
   Future<void>? _initializeControllerFuture;
   final FlutterTts _tts = FlutterTts();
-  final AIBrain _brain = AIBrain();
+  final AIBrain _brain = AIBrain(); // Tumhara AI Logic Class
 
-  bool _isProcessing = false;
-  String _desc = "नेत्रा विजन सक्रिय है...";
-  Timer? _timer;
+  bool _isProcessing = false; // Check karega ki AI busy to nahi hai
+  String _desc = "Initializing Netra Vision..."; // Screen par dikhne wala text
+  Timer? _timer; // Auto-pilot timer
 
   @override
   void initState() {
     super.initState();
     _brain.initBrain();
-    _setupVoice();
-    _initCamera();
+    _setupVoice(); // English Voice set karega
+    _initCamera(); // Camera chalu karega
   }
 
+  // 1. ENGLISH VOICE SETUP
   Future<void> _setupVoice() async {
-    await _tts.setLanguage("hi-IN");
-    await _tts.setPitch(1.0);
-    await _tts.setSpeechRate(0.6);
+    await _tts.setLanguage("en-US"); // English (United States)
+    await _tts.setPitch(1.0); // Normal Pitch
+    await _tts.setSpeechRate(0.5); // Speed thodi dheemi taki saaf samajh aaye
+    await _tts.awaitSpeakCompletion(true); // Pura bolne ke baad hi agla bole
   }
 
+  // 2. CAMERA SETUP
   Future<void> _initCamera() async {
     final cameras = await availableCameras();
     if (cameras.isNotEmpty) {
+      // Resolution 'medium' rakho taki photo jaldi upload ho aur fast response aaye
       _controller = CameraController(cameras.first, ResolutionPreset.medium,
           enableAudio: false);
       _initializeControllerFuture = _controller!.initialize();
       if (mounted) {
         setState(() {});
-        _startFastAnalysisLoop();
+        _startAutoPilotLoop(); // Camera khulte hi scanning shuru
       }
     }
   }
 
-  void _startFastAnalysisLoop() {
-    _timer = Timer.periodic(const Duration(milliseconds: 2500), (timer) {
-      if (!_isProcessing && mounted) {
+  // 3. AUTO-PILOT LOOP (Har 2 second me scan karega)
+  void _startAutoPilotLoop() {
+    _timer = Timer.periodic(const Duration(milliseconds: 2000), (timer) {
+      // Agar pichla scan chal raha hai, to naya mat lo (Queue rokne ke liye)
+      if (!_isProcessing && mounted && _controller!.value.isInitialized) {
         _captureAndAnalyze();
       }
     });
   }
 
+  // 4. MAIN MAGIC FUNCTION (AI Logic)
   Future<void> _captureAndAnalyze() async {
-    if (_controller == null || !_controller!.value.isInitialized) return;
     try {
-      setState(() => _isProcessing = true);
-      final image = await _controller!.takePicture();
-      String prompt = """
-      You are a visual assistant for a blind person.
-      ANALYZE PRIORITY:
-      1. **DANGER:** Car, Bike, Pit, Fire, Obstacle? Warn immediately.
-      2. **CURRENCY:** Identify Note value (e.g. 500 Rupees).
-      3. **OBJECT:** Name the main object.
+      setState(() => _isProcessing = true); // Loading shuru
+      final image = await _controller!.takePicture(); // Photo khincho
       
-      OUTPUT: SHUDH HINDI (Max 6 words).
-      Examples: "सावधान, कार आ रही है", "यह 500 रुपये का नोट है".
+      // --- SUPER INTELLIGENT PROMPT ---
+      String prompt = """
+      You are 'Netra', an advanced vision assistant for the blind. 
+      Analyze the image strictly based on visual evidence.
+
+      PRIORITY RULES:
+      1. **DANGER (Safety First):** If you see an approaching Car, Bike, Fire, Deep Pit, or Edge, output MUST start with "STOP DANGER".
+      
+      2. **MEDICINE (Health):** If you see a Medicine Strip or Bottle:
+         - Read the Name (e.g., Dolo 650, Vicks).
+         - Explain usage briefly (e.g., "For fever", "For cold").
+         - If text is unreadable, say "Medicine name unclear".
+
+      3. **HARDWARE (Tech):** If you see a computer part (RAM, Mouse, Arduino, Keyboard):
+         - Name it and its function (e.g., "Arduino Uno, for robotics").
+
+      4. **GENERAL:** If none of above, describe the object in front in 5-10 words.
+
+      OUTPUT FORMAT: Plain English text only. Max 15 words.
       """;
+
+      // AI ko bhejo (Gemini API)
       String? res = await _brain.askWithImage(prompt, File(image.path));
+
       if (mounted && res != null) {
+        // --- DANGER VIBRATION LOGIC ---
+        // Agar jawab me Danger ya Stop hai, to phone vibrate karega
+        if (res.toUpperCase().contains("STOP") || 
+            res.toUpperCase().contains("DANGER") || 
+            res.toUpperCase().contains("WARNING")) {
+          HapticFeedback.heavyImpact(); // Zordaar jhatka 1
+          await Future.delayed(const Duration(milliseconds: 200));
+          HapticFeedback.heavyImpact(); // Zordaar jhatka 2
+        }
+
         setState(() {
           _desc = res;
-          _isProcessing = false;
+          _isProcessing = false; // Loading band
         });
+        
+        // User ko bolkar batao
         await _tts.speak(res);
       }
     } catch (e) {
+      debugPrint("Error in Vision: $e");
       setState(() => _isProcessing = false);
     }
   }
 
   @override
   void dispose() {
-    _timer?.cancel();
+    _timer?.cancel(); // Timer band karo varna battery khayega
     _controller?.dispose();
     _tts.stop();
     super.dispose();
@@ -97,28 +132,32 @@ class _LiveCameraScreenState extends State<LiveCameraScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Jab tak camera nahi khulta, loading dikhao
     if (_controller == null || _initializeControllerFuture == null) {
       return const Center(
           child: CircularProgressIndicator(color: AppColors.primaryAccent));
     }
+
     return FutureBuilder<void>(
       future: _initializeControllerFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
           return Stack(children: [
+            // 1. CAMERA PREVIEW (Full Screen)
             SizedBox(
                 height: double.infinity,
                 width: double.infinity,
                 child: CameraPreview(_controller!)),
+            
+            // 2. BLACK OVERLAY (Niche ka design)
             Positioned(
                 bottom: 0,
                 left: 0,
                 right: 0,
                 child: Container(
-                    padding: const EdgeInsets.only(
-                        top: 20, bottom: 30, left: 20, right: 20),
+                    padding: const EdgeInsets.all(20),
                     decoration: const BoxDecoration(
-                        color: Colors.black,
+                        color: Colors.black87,
                         borderRadius: BorderRadius.only(
                             topLeft: Radius.circular(30),
                             topRight: Radius.circular(30)),
@@ -129,47 +168,61 @@ class _LiveCameraScreenState extends State<LiveCameraScreen> {
                               spreadRadius: 5)
                         ]),
                     child: Column(mainAxisSize: MainAxisSize.min, children: [
+                      
+                      // AI TEXT OUTPUT
                       Text(_desc,
                           textAlign: TextAlign.center,
                           style: GoogleFonts.outfit(
-                              color: _desc.contains("सावधान") ||
-                                      _desc.contains("Car")
+                              // Agar khatra hai to LAL rang, varna SAFED
+                              color: _desc.toUpperCase().contains("DANGER") ||
+                                      _desc.toUpperCase().contains("STOP")
                                   ? Colors.redAccent
                                   : Colors.white,
-                              fontSize: 20,
+                              fontSize: 18,
                               fontWeight: FontWeight.bold)),
                       const SizedBox(height: 20),
+                      
+                      // NETRA EYE ANIMATION (Orb)
                       Container(
-                          height: 80,
-                          width: 80,
+                          height: 80, // ✅ Correct Size: 80
+                          width: 80,  // ✅ Correct Size: 80
                           decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: Colors.black,
+                              border: Border.all(
+                                color: _desc.toUpperCase().contains("DANGER")
+                                  ? Colors.red // Khatre me border LAL ho jayega
+                                  : AppColors.primaryAccent,
+                                width: 2
+                              ),
                               boxShadow: [
                                 BoxShadow(
-                                    color: _desc.contains("सावधान")
+                                    color: _desc.toUpperCase().contains("DANGER")
                                         ? Colors.red.withOpacity(0.8)
                                         : (_isProcessing
-                                            ? Colors.purpleAccent
-                                                .withOpacity(0.6)
-                                            : AppColors.primaryAccent
-                                                .withOpacity(0.4)),
+                                            ? Colors.purpleAccent.withOpacity(0.6)
+                                            : AppColors.primaryAccent.withOpacity(0.4)),
                                     blurRadius: 30,
                                     spreadRadius: 5)
                               ]),
                           child: ClipOval(
-                              child:
-                                  Stack(alignment: Alignment.center, children: [
+                              child: Stack(alignment: Alignment.center, children: [
+                            // Tumhara GIF yahan hai
                             Image.asset("assets/orb.gif",
                                 fit: BoxFit.cover, height: 80, width: 80),
+                            // Jab scan ho raha ho, to gol loading ghumegi
                             if (_isProcessing)
                               const CircularProgressIndicator(
                                   color: Colors.white, strokeWidth: 2)
                           ]))),
                       const SizedBox(height: 10),
-                      const Text("AI Vision Active",
-                          style: TextStyle(color: Colors.white38, fontSize: 10))
+                      
+                      // STATUS TEXT
+                      Text(_isProcessing ? "Scanning..." : "Auto-Pilot Active",
+                          style: const TextStyle(color: Colors.white54, fontSize: 12))
                     ]))),
+            
+            // 3. BACK BUTTON (Upar)
             Positioned(
                 top: 40,
                 left: 10,

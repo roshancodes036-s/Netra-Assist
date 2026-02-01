@@ -1,11 +1,11 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:camera/camera.dart'; // Camera Package
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../theme/app_colors.dart';
-import '../widgets/custom_widgets.dart';
 import '../services/ai_logic.dart';
 
 class FaceEmotionScreen extends StatefulWidget {
@@ -14,112 +14,256 @@ class FaceEmotionScreen extends StatefulWidget {
   State<FaceEmotionScreen> createState() => _FaceEmotionScreenState();
 }
 
-class _FaceEmotionScreenState extends State<FaceEmotionScreen> {
-  File? _image;
+class _FaceEmotionScreenState extends State<FaceEmotionScreen>
+    with SingleTickerProviderStateMixin {
+  // Camera & AI Variables
+  CameraController? _controller;
+  List<CameraDescription>? _cameras;
+  int _selectedCameraIdx = 0; // 0 = Back, 1 = Front
+  
   final AIBrain _brain = AIBrain();
   final FlutterTts _tts = FlutterTts();
-  bool _isLoading = false;
-  String _result = "Tap Camera to Scan Faces";
+  
+  // Logic Variables
+  bool _isProcessing = false;
+  String _result = "Initializing Social Coach...";
+  Timer? _timer;
+
+  // Animation Variables (Laser Scan)
+  late AnimationController _animController;
+  late Animation<double> _animation;
 
   @override
   void initState() {
     super.initState();
     _brain.initBrain();
-    _tts.setLanguage("hi-IN");
+    _setupVoice();
+    _initCamera();
+    _setupAnimation();
   }
 
-  Future<void> _scanFace() async {
-    final picker = ImagePicker();
-    final pickedFile =
-        await picker.pickImage(source: ImageSource.camera); // Direct Camera
-    if (pickedFile != null) {
-      setState(() {
-        _image = File(pickedFile.path);
-        _isLoading = true;
-        _result = "Analyzing...";
-      });
+  // 1. SETUP LASER ANIMATION
+  void _setupAnimation() {
+    _animController = AnimationController(
+      duration: const Duration(seconds: 2), // 2 Second scan speed
+      vsync: this,
+    )..repeat(reverse: true); // Upar-Niche hota rahega
 
+    _animation = Tween<double>(begin: 0.0, end: 1.0).animate(_animController);
+  }
+
+  // 2. ENGLISH VOICE SETUP
+  Future<void> _setupVoice() async {
+    await _tts.setLanguage("en-US");
+    await _tts.setSpeechRate(0.5);
+    await _tts.setPitch(1.0);
+  }
+
+  // 3. CAMERA SETUP (Dual Support)
+  Future<void> _initCamera() async {
+    _cameras = await availableCameras();
+    if (_cameras != null && _cameras!.isNotEmpty) {
+      _setCamera(_cameras![_selectedCameraIdx]);
+    }
+  }
+
+  Future<void> _setCamera(CameraDescription cameraDescription) async {
+    if (_controller != null) {
+      await _controller!.dispose();
+    }
+    _controller = CameraController(
+      cameraDescription, 
+      ResolutionPreset.medium, 
+      enableAudio: false
+    );
+
+    try {
+      await _controller!.initialize();
+      if (mounted) {
+        setState(() {});
+        _startAutoPilot(); // Camera chalu hote hi scanning shuru
+      }
+    } catch (e) {
+      debugPrint("Camera Error: $e");
+    }
+  }
+
+  // 4. TOGGLE FRONT/BACK CAMERA
+  void _switchCamera() {
+    if (_cameras == null || _cameras!.length < 2) return;
+    setState(() {
+      _selectedCameraIdx = (_selectedCameraIdx == 0) ? 1 : 0;
+      _result = "Switching Camera...";
+    });
+    _setCamera(_cameras![_selectedCameraIdx]);
+  }
+
+  // 5. AUTO PILOT LOOP
+  void _startAutoPilot() {
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      if (!_isProcessing && mounted && _controller!.value.isInitialized) {
+        _scanFaceAndEmotion();
+      }
+    });
+  }
+
+  // 6. THE SOCIAL COACH LOGIC (AI)
+  Future<void> _scanFaceAndEmotion() async {
+    try {
+      setState(() => _isProcessing = true);
+      final image = await _controller!.takePicture();
+
+      // --- EMOTION COACH PROMPT ---
       String prompt = """
-      Analyze this image for people.
-      OUTPUT FORMAT (Hindi/English Mix):
-      1. Count: How many people?
-      2. Details: Appx Age, Gender for each.
-      3. Emotion: Happy, Sad, Angry?
-      4. Activity: What are they doing?
-      Keep it conversational like a friend describing the scene to a blind person.
+      You are 'Netra', a Social Intelligence Coach for a blind person.
+      Analyze the face in the image INSTANTLY.
+      
+      OUTPUT FORMAT:
+      [Emotion]: [Social Advice]
+      
+      RULES:
+      1. If ANGRY/UPSET: Say "He looks upset. Speak softly and ask what's wrong."
+      2. If HAPPY/SMILING: Say "She looks happy. You can match her energy."
+      3. If SERIOUS/FOCUSED: Say "He looks serious. Keep the conversation professional."
+      4. If NO FACE: Say "No face detected."
+      
+      Keep it under 15 words. Speak in English.
       """;
 
-      String? res = await _brain.askWithImage(prompt, _image!);
-      setState(() {
-        _isLoading = false;
-        _result = res ?? "Could not analyze.";
-      });
-      _tts.speak(_result);
+      String? res = await _brain.askWithImage(prompt, File(image.path));
+
+      if (mounted && res != null) {
+        setState(() {
+          _result = res;
+          _isProcessing = false;
+        });
+        await _tts.speak(res);
+      }
+    } catch (e) {
+      setState(() => _isProcessing = false);
     }
   }
 
   @override
+  void dispose() {
+    _timer?.cancel();
+    _controller?.dispose();
+    _animController.dispose();
+    _tts.stop();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return ProPageLayout(
-      title: "Face & Emotion",
-      icon: Icons.face_retouching_natural,
-      child: Column(children: [
-        Expanded(
-            flex: 3,
-            child: Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                    color: AppColors.cardSurface,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                        color: AppColors.primaryAccent.withAlpha(128))),
-                child: _image != null
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(20),
-                        child: Image.file(_image!, fit: BoxFit.cover))
-                    : Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                            Icon(Icons.person_search,
-                                size: 80,
-                                color:
-                                    AppColors.primaryAccent.withAlpha(128)),
-                            const SizedBox(height: 10),
-                            Text("Tap to Scan",
-                                style: GoogleFonts.outfit(
-                                    color: Colors.white38, fontSize: 18))
-                          ]))),
-        const SizedBox(height: 20),
-        if (_isLoading)
-          const CircularProgressIndicator(color: AppColors.primaryAccent),
-        if (!_isLoading)
-          Expanded(
-              flex: 1,
-              child: SingleChildScrollView(
-                  child: Text(_result,
-                      style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold),
-                      textAlign: TextAlign.center))),
-        const SizedBox(height: 20),
-        SizedBox(
+    if (_controller == null || !_controller!.value.isInitialized) {
+      return const Scaffold(
+        backgroundColor: Colors.black,
+        body: Center(child: CircularProgressIndicator(color: AppColors.primaryAccent)),
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Stack(
+        children: [
+          // 1. FULL SCREEN CAMERA
+          SizedBox(
+            height: double.infinity,
             width: double.infinity,
-            child: ElevatedButton.icon(
-                onPressed: _scanFace,
-                icon:
-                    const Icon(Icons.camera_alt, color: Colors.black, size: 28),
-                label: const Text("SCAN NOW",
-                    style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold)),
-                style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryAccent,
-                    padding: const EdgeInsets.symmetric(vertical: 20),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30)))))
-      ]),
+            child: CameraPreview(_controller!),
+          ),
+
+          // 2. LASER SCAN ANIMATION (The Cool Part)
+          AnimatedBuilder(
+            animation: _animation,
+            builder: (context, child) {
+              return Positioned(
+                top: MediaQuery.of(context).size.height * _animation.value,
+                left: 0,
+                right: 0,
+                child: Container(
+                  height: 2, // Laser ki motai
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Colors.greenAccent, // Neon Green Laser
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.greenAccent.withOpacity(0.8),
+                        blurRadius: 15,
+                        spreadRadius: 2
+                      )
+                    ]
+                  ),
+                ),
+              );
+            },
+          ),
+
+          // 3. UI OVERLAY (Bottom)
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              decoration: const BoxDecoration(
+                color: Colors.black87,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+                boxShadow: [BoxShadow(color: Colors.black54, blurRadius: 20)]
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    _result,
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 20, // Bada Text
+                      fontWeight: FontWeight.bold
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  if (_isProcessing)
+                    const LinearProgressIndicator(color: AppColors.primaryAccent),
+                  if (!_isProcessing)
+                    Text(
+                      "Social Coach Active • Scanning...",
+                      style: GoogleFonts.outfit(color: Colors.greenAccent, fontSize: 12),
+                    )
+                ],
+              ),
+            ),
+          ),
+
+          // 4. TOP BUTTONS (Back & Switch Camera)
+          Positioned(
+            top: 50,
+            left: 20,
+            right: 20,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Back Button
+                CircleAvatar(
+                  backgroundColor: Colors.black54,
+                  child: IconButton(
+                    icon: const Icon(Icons.arrow_back, color: Colors.white),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ),
+                // Switch Camera Button
+                FloatingActionButton.small(
+                  backgroundColor: AppColors.primaryAccent,
+                  onPressed: _switchCamera,
+                  child: const Icon(Icons.flip_camera_ios, color: Colors.black),
+                ),
+              ],
+            ),
+          )
+        ],
+      ),
     );
   }
 }
