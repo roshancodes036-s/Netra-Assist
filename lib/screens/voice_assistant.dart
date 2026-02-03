@@ -35,7 +35,7 @@ class _VoiceScreenState extends State<VoiceScreen>
   void initState() {
     super.initState();
     _speech = stt.SpeechToText();
-    _brain.initBrain();
+    _brain.initBrain(); // Brain ko initialize karna zaruri hai
     _initTTS();
 
     // Animation Setup
@@ -59,9 +59,12 @@ class _VoiceScreenState extends State<VoiceScreen>
       onError: (val) => debugPrint('Error: $val'),
       onStatus: (val) {
         if (val == 'done' || val == 'notListening') {
-          setState(() => _isListening = false);
-          _animController.stop();
-          _animController.value = 1.0;
+          // Jab sunna band ho jaye
+          if (mounted) {
+            setState(() => _isListening = false);
+            _animController.stop();
+            _animController.value = 1.0;
+          }
 
           // Agar kuch bola gaya hai, to process karo
           if (_text.isNotEmpty &&
@@ -76,10 +79,10 @@ class _VoiceScreenState extends State<VoiceScreen>
     if (available) {
       setState(() {
         _isListening = true;
-        _aiResponse = "";
+        _aiResponse = ""; // Purana jawab hata do
         _text = "Listening...";
       });
-      _animController.repeat(reverse: true);
+      _animController.repeat(reverse: true); // Animation shuru
 
       _speech.listen(
         onResult: (val) {
@@ -100,21 +103,23 @@ class _VoiceScreenState extends State<VoiceScreen>
 
   void _stopListening() {
     _speech.stop();
-    setState(() {
-      _isListening = false;
-      _animController.stop();
-      _animController.value = 1.0;
-    });
+    if (mounted) {
+      setState(() {
+        _isListening = false;
+        _animController.stop();
+        _animController.value = 1.0;
+      });
+    }
   }
 
   // 3. AI PROCESSING (Detailed English Response)
   void _processVoice(String query) async {
     if (query.trim().isEmpty || query == "Listening...") return;
 
-    _speech.stop();
+    _speech.stop(); // Sunna band karo
     setState(() {
       _isListening = false;
-      _isThinking = true;
+      _isThinking = true; // Sochna shuru
       _animController.stop();
     });
 
@@ -140,16 +145,20 @@ class _VoiceScreenState extends State<VoiceScreen>
     4. If asked about code, explain the logic simply.
     """;
 
-    String? res = await _brain.askTextOnly(prompt);
+    // ✅ FIX: Yahan 'askTextOnly' ki jagah 'askLaravel' lagaya hai
+    // Kyunki tumhari ai_logic.dart me yahi naam hai.
+    String? res = await _brain.askLaravel(prompt);
 
     _finalizeResponse(res ?? "I could not understand. Please try again.");
   }
 
   void _finalizeResponse(String response) async {
-    setState(() {
-      _isThinking = false;
-      _aiResponse = response;
-    });
+    if (mounted) {
+      setState(() {
+        _isThinking = false;
+        _aiResponse = response;
+      });
+    }
     // Ensure TTS stays in English
     await _tts.setLanguage("en-US");
     await _tts.speak(response);
@@ -187,7 +196,7 @@ class _VoiceScreenState extends State<VoiceScreen>
 
           const SizedBox(height: 40),
 
-          // 2. ORB (Your Original Design)
+          // 2. ORB (Animation & Click)
           GestureDetector(
               onTap: () {
                 if (_isListening) {
@@ -207,15 +216,20 @@ class _VoiceScreenState extends State<VoiceScreen>
                           ),
                       child: ClipOval(
                           child: Stack(alignment: Alignment.center, children: [
-                        // Orb Image
+                        // Orb Image (Make sure assets/orb.gif exists)
                         Image.asset("assets/orb.gif",
                             fit: BoxFit.cover, height: 350, width: 350),
 
-                        // Icons Overlay
+                        // Loading Indicator (Jab AI soch raha ho)
                         if (_isThinking)
-                          const CircularProgressIndicator(
-                              color: Colors.white, strokeWidth: 3),
+                          const SizedBox(
+                            height: 350,
+                            width: 350,
+                            child: CircularProgressIndicator(
+                                color: Colors.white, strokeWidth: 2),
+                          ),
 
+                        // Icons Overlay
                         if (!_isListening && !_isThinking)
                           const Icon(Icons.touch_app,
                               color: Colors.white54, size: 60),
