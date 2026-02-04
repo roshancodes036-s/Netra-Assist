@@ -25,10 +25,10 @@ class _VoiceScreenState extends State<VoiceScreen>
   // Variables
   bool _isListening = false;
   bool _isThinking = false;
-  String _status = "INITIALIZING..."; // Top Status Text
+  String _status = "INITIALIZING...";
   String _aiResponse = "";
 
-  // 🔥 SAFETY TIMER
+  // Safety Timer
   Timer? _silenceTimer;
 
   // Animation
@@ -40,49 +40,56 @@ class _VoiceScreenState extends State<VoiceScreen>
     _speech = stt.SpeechToText();
     _brain.initBrain();
 
+    // Orb Pulse Animation
     _animController = AnimationController(
         vsync: this,
-        duration: const Duration(milliseconds: 1000), // Thoda fast pulse
-        lowerBound: 0.9,
-        upperBound: 1.1);
+        duration: const Duration(milliseconds: 1000),
+        lowerBound: 0.95,
+        upperBound: 1.05);
 
-    // Auto Start
     _initSystem();
   }
 
-  // 1. SETUP SYSTEM (Voice & Auto-Loop)
+  // 1. SETUP SYSTEM (Voice & Auto-Loop Logic)
   void _initSystem() async {
-    // Google/Jarvis Voice Settings
     await _tts.setLanguage("en-US");
-    await _tts.setPitch(0.9); // Clear & Natural pitch
-    await _tts.setSpeechRate(0.55); // Thoda tezi se bolega (Smart feel)
+    await _tts.setPitch(0.9); // Deep & Professional
+    await _tts.setSpeechRate(0.6); // Clear & Commanding Speed
 
-    // Loop Logic: Jab bolna band kare, turant sunna shuru kare
-    _tts.setCompletionHandler(() {
+    // ✅ MAGIC LOOP: Jawab khatam hote hi screen saaf aur sunna shuru
+    _tts.setCompletionHandler(() async {
+      await Future.delayed(const Duration(milliseconds: 200));
+
       if (mounted && !_isListening && !_isThinking) {
-        _startListening();
+        setState(() {
+          _aiResponse = ""; // Screen Clear
+          _status = "LISTENING...";
+        });
+        _startListening(); // Auto Listen Start
       }
     });
 
-    // Welcome Message
     await Future.delayed(const Duration(milliseconds: 500));
     await _tts.speak("CodeNetra online. I'm listening, Sir.");
   }
 
-  // 2. ULTRA-FAST LISTENING (Google Assistant Style)
+  // 2. SMART LISTENING (1.5 Sec Pause - Perfect Balance)
   void _startListening() async {
     if (_isListening || _isThinking) return;
 
     bool available = await _speech.initialize(
-      onError: (val) => _resetSilenceTimer(),
+      onError: (val) {
+        if (val.errorMsg != "error_busy") _resetSilenceTimer();
+      },
       onStatus: (val) {
         if (val == 'done' || val == 'notListening') {
-          if (mounted) {
+          if (mounted && !_isThinking) {
             setState(() {
               _isListening = false;
-              _status = "PROCESSING..."; // Status update
+              if (_aiResponse.isEmpty) _status = "PROCESSING...";
             });
             _animController.stop();
+            _animController.value = 1.0;
           }
         }
       },
@@ -91,7 +98,7 @@ class _VoiceScreenState extends State<VoiceScreen>
     if (available) {
       setState(() {
         _isListening = true;
-        _status = "LISTENING..."; // Status update
+        _status = "LISTENING...";
       });
       _animController.repeat(reverse: true);
       _resetSilenceTimer();
@@ -99,17 +106,13 @@ class _VoiceScreenState extends State<VoiceScreen>
       _speech.listen(
         onResult: (val) {
           _silenceTimer?.cancel();
-          // Hum text update nahi kar rahe screen pe (Clean Look)
-
           if (val.finalResult) {
-            // Jaise hi user rukega, ye turant fire hoga
             _processVoice(val.recognizedWords);
           }
         },
-        // 🔥 SETTINGS FOR SPEED (Google Assistant Feel)
         listenFor: const Duration(seconds: 20),
-        pauseFor:
-            const Duration(seconds: 2), // 2 sec rukte hi pakad lega (Fast)
+        // ✅ 1.5 SECONDS PAUSE (Natural Conversation Flow)
+        pauseFor: const Duration(milliseconds: 1500),
         localeId: "en-US",
         listenMode: stt.ListenMode.dictation,
         partialResults: true,
@@ -131,14 +134,13 @@ class _VoiceScreenState extends State<VoiceScreen>
 
   void _resetSilenceTimer() {
     _silenceTimer?.cancel();
-    // 60 sec tak wait karega, fir sleep
     _silenceTimer = Timer(const Duration(seconds: 60), () {
       _stopListening();
       _tts.speak("Going to sleep mode, Sir.");
     });
   }
 
-  // 3. INTELLIGENT PROCESSING (Satik Answer Logic)
+  // 3. INTELLIGENT PROCESSING (With KILLER AURA Identity)
   void _processVoice(String query) async {
     if (query.trim().isEmpty) {
       _startListening();
@@ -155,23 +157,30 @@ class _VoiceScreenState extends State<VoiceScreen>
       _status = "ANALYZING...";
     });
 
-    // Identity check
-    if (query.toLowerCase().contains("who are you")) {
+    String lowerQuery = query.toLowerCase();
+
+    // 🔥🔥🔥 THE AURA RESPONSE (WHATSAPP STATUS MATERIAL) 🔥🔥🔥
+    if (lowerQuery.contains("who made you") ||
+        lowerQuery.contains("created by")) {
+      _finalizeResponse(
+          "I am the digital heartbeat of Roshan Chaurasiya's vision. I exist to bridge the gap between darkness and light. I am CodeNetra, Sir.");
+      return;
+    }
+
+    // Standard Identity
+    if (lowerQuery.contains("who are you")) {
       _finalizeResponse("I am CodeNetra AI, your intelligent assistant, Sir.");
       return;
     }
 
-    // 🔥 THE PERFECT PROMPT (Satik & Smart)
+    // Prompt for Gemini
     String prompt = """
-    You are CodeNetra-AI. You are talking to your Boss.
+    You are CodeNetra-AI. 
     User said: "$query"
-    
     INSTRUCTIONS:
     1. Reply in English. Tone: Smart, Professional, Concise.
-    2. Length: 2 to 3 sentences (Approx 60-80 words).
-    3. QUALITY: Do not be too short. Explain the MAIN point clearly.
-    4. Don't waste time on greetings. Give the Answer directly.
-    5. If asked a technical question, explain it simply but accurately.
+    2. Length: 2 to 3 sentences (Approx 60 words).
+    3. Be direct and helpful.
     """;
 
     String? res = await _brain.askLaravel(prompt);
@@ -184,7 +193,7 @@ class _VoiceScreenState extends State<VoiceScreen>
       setState(() {
         _isThinking = false;
         _aiResponse = response;
-        _status = "ONLINE"; // Wapas normal status
+        _status = "ONLINE";
       });
     }
     await _tts.speak(response);
@@ -199,7 +208,7 @@ class _VoiceScreenState extends State<VoiceScreen>
     super.dispose();
   }
 
-  // 4. HOLOGRAPHIC UI (Clean & Sci-Fi)
+  // 4. HOLOGRAPHIC UI (Size 550, Clean Black BG)
   @override
   Widget build(BuildContext context) {
     return ProPageLayout(
@@ -210,7 +219,7 @@ class _VoiceScreenState extends State<VoiceScreen>
         width: double.infinity,
         height: double.infinity,
         child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-          // STATUS TEXT (HUD Style)
+          // STATUS TEXT (HUD)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
@@ -229,7 +238,7 @@ class _VoiceScreenState extends State<VoiceScreen>
 
           const SizedBox(height: 50),
 
-          // THE ORB (Glowing)
+          // THE ORB (550 Size - NO BACKGROUND GLOW)
           GestureDetector(
               onTap: () {
                 if (_isListening) {
@@ -242,29 +251,24 @@ class _VoiceScreenState extends State<VoiceScreen>
               child: ScaleTransition(
                   scale: _animController,
                   child: Container(
-                      height: 300,
-                      width: 300,
-                      decoration:
-                          BoxDecoration(shape: BoxShape.circle, boxShadow: [
-                        BoxShadow(
-                          color: (_isListening ? Colors.red : Colors.cyan)
-                              .withOpacity(0.3),
-                          blurRadius: 60,
-                          spreadRadius: 5,
-                        )
-                      ]),
+                      height: 550,
+                      width: 550,
+                      decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.transparent // Pure Transparent
+                          ),
                       child: ClipOval(
                           child: Stack(alignment: Alignment.center, children: [
                         Image.asset("assets/orb.gif",
-                            fit: BoxFit.cover, height: 350, width: 350),
+                            fit: BoxFit.cover, height: 550, width: 550),
 
-                        // Loading Ring
+                        // Thinking Indicator
                         if (_isThinking)
                           const SizedBox(
-                            height: 300,
-                            width: 300,
+                            height: 550,
+                            width: 550,
                             child: CircularProgressIndicator(
-                                color: Colors.cyanAccent, strokeWidth: 1),
+                                color: Colors.cyanAccent, strokeWidth: 2),
                           ),
                       ]))))),
 
@@ -280,7 +284,7 @@ class _VoiceScreenState extends State<VoiceScreen>
                 style: GoogleFonts.shareTechMono(
                     color: Colors.cyanAccent,
                     fontSize: 18,
-                    height: 1.4, // Line height for readability
+                    height: 1.4,
                     shadows: [
                       const Shadow(
                         blurRadius: 8.0,
