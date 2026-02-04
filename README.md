@@ -289,6 +289,14 @@ Unlike single-purpose AI apps, CodeNetra-AI combines:
 | Architecture | Modular Screens + Services |
 
 ---
+### 🏆 Hackathon Note
+
+CodeNetra-AI is not just a demo — it is a working inclusive AI product demonstrating:
+
+* **Accessibility Innovation:** Real-time help for the visually impaired.
+* **Developer Acceleration:** Tools to boost coding speed.
+* **Gemini 3 Multimodal Intelligence:** Powered by the latest AI models.
+* **✅ Solo Developer Verification:** Please note that commits from users **`roshancodes036-sudo`**, **`sinurai535-a11y`**, and **`Et947`** all belong to the **Sole Creator, Roshan Chaurasiya** (working across different devices).
 
 # 🔐 API Key & Security Setup (Important)
 
@@ -302,65 +310,82 @@ For security reasons, the Gemini API key logic is **not included** in this publi
 
 ```dart
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:google_generative_ai/google_generative_ai.dart';
+import 'dart:developer' as developer;
 
 class AIBrain {
-  // 👇 PASTE YOUR API KEY HERE
-  static const String _apiKey = "PASTE_YOUR_API_KEY_HERE";
+  // ✅ User API Key Integration
+  static const String _apiKey = "";
 
   late GenerativeModel _model;
-  late ChatSession _chatSession;
+  late ChatSession _chat;
   bool _isInitialized = false;
-
-  AIBrain() {
-    initBrain();
-  }
 
   void initBrain() {
     try {
-      _model = GenerativeModel(model: 'gemini-1.5-flash', apiKey: _apiKey);
-      _chatSession = _model.startChat();
+      _model = GenerativeModel(
+        // 🔥 Gemini 3 Flash Preview (Hackathon Special)
+        // High speed and low latency for Live Vision
+        model: 'gemini-3-flash-preview',
+        apiKey: _apiKey,
+      );
+      _chat = _model.startChat();
       _isInitialized = true;
+      developer.log("✅ Netra AI Brain: ACTIVE (Model: gemini-3-flash-preview)");
     } catch (e) {
-      print("Brain Error: $e");
+      developer.log("❌ Brain Error: $e");
     }
   }
 
-  // 1. Text Chat
+  // 🔹 System Instruction (Language + Tone + Safety)
+  String get _systemInstruction =>
+      " (Reply in the same language as the user (English, Hindi, or Hinglish). Keep the tone professional yet friendly. Use relevant emojis naturally. For blind users, provide concise, safety-first descriptions regarding obstacles, currency, or text.)";
+
+  // 🔥 1. TEXT ONLY CHAT
   Future<String?> askLaravel(String prompt) async {
     try {
       if (!_isInitialized) initBrain();
-      final content = Content.text(prompt);
-      final response = await _chatSession.sendMessage(content);
+
+      // Message + Hidden Instruction
+      final content = Content.text(prompt.isNotEmpty
+          ? prompt + _systemInstruction
+          : "Hello$_systemInstruction");
+
+      final response = await _chat.sendMessage(content);
       return response.text;
     } catch (e) {
-      return "Error: $e";
+      return "Error: ${e.toString()}";
     }
   }
-  
-  // 2. Chat Helper
-   Future<String?> chat(String prompt) async {
-    return await askLaravel(prompt);
-  }
 
-  // 3. Image Analysis
+  // 🔥 2. IMAGE + TEXT CHAT (Camera/Gallery)
   Future<String?> askWithImage(String prompt, File imageFile) async {
     try {
       if (!_isInitialized) initBrain();
+
+      // Convert image to bytes
       final imageBytes = await imageFile.readAsBytes();
+
+      // Prepare Content (Text + Image)
       final content = Content.multi([
-        TextPart(prompt),
+        TextPart(prompt.isEmpty
+            ? "Explain this image in detail for a visually impaired person.$_systemInstruction"
+            : prompt + _systemInstruction),
         DataPart('image/jpeg', imageBytes),
       ]);
+
+      // Send to Gemini 3
       final response = await _model.generateContent([content]);
       return response.text;
     } catch (e) {
-      return "Vision Error: $e";
+      return "Image Error: ${e.toString()}";
     }
   }
-}
 
+  void stopSpeaking() {
+    // Future scope for stopping TTS
+  }
+}
 
 ⚡ Run Locally
 1. Clone Repository
@@ -378,20 +403,6 @@ Roshan Chaurasiya
 
 Built with ❤️ to demonstrate the real-world impact of Gemini 3.
 
-🏆 Hackathon Note
-
-CodeNetra-AI is not just a demo —
-it is a working inclusive AI product showing:
-
-Accessibility Innovation
-
-Developer Acceleration
-
-Gemini 3 Multimodal Intelligence
-
----
-### 📝 Note on Commit History
-Please note that commits from users **`roshancodes036-sudo`**, **`sinurai535-a11y`**, and **`Et947`** all belong to the **sole developer (Roshan Chaurasiya)**. These reflect development across different machines and git configurations during the hackathon.
 
 
 
