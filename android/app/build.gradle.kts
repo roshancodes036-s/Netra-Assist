@@ -37,6 +37,7 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
     }
+    setProperty("archivesBaseName", "CodeNetra-AI")
 }
 
 flutter {
