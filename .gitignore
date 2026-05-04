@@ -1,17 +1,5 @@
-# Flutter related
+lib/firebase_options.dart
+lib/services/ai_logic.dart
 .dart_tool/
 build/
 .env
-
-# Firebase related
-lib/firebase_options.dart
-
-# Miscellaneous
-.vscode/
-.idea/
-*.iml
-.flutter-plugins
-.flutter-plugins-dependencies
-.pub-cache/
-.pub/
-node_modules/
