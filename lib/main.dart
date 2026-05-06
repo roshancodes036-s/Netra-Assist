@@ -7,12 +7,18 @@ import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+// ✅ FIX: flutter_dotenv पैकेज को इम्पोर्ट किया गया है
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 // ✅ IMPORTS
 import 'theme/app_colors.dart'; 
 import 'screens/splash_screen.dart'; 
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // ✅ FIX: .env फाइल को ऐप शुरू होने से पहले लोड करें
+  await dotenv.load(fileName: ".env");
 
   // 1. Safe Firebase Initialization (वेब प्रीव्यू के लिए सेफ तरीका)
   // इससे अगर Firebase कंफिगर नहीं होगा, तो भी ऐप क्रैश नहीं होगी और UI रन हो जाएगा।

@@ -10,6 +10,9 @@ dependencies:
   flutter:
     sdk: flutter
 
+  # ✅ FIX: Added flutter_dotenv to load environment variables securely
+  flutter_dotenv: ^5.2.1 
+
   # Icons
   cupertino_icons: ^1.0.8
   lucide_icons: ^0.257.0
@@ -64,3 +67,4 @@ flutter:
   assets:
     - assets/orb.gif
     - assets/icon.png
+    - .env               # ✅ FIX: Registered the .env file as an asset

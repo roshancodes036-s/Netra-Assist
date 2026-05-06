@@ -1,5 +1,10 @@
-lib/firebase_options.dart
-lib/services/ai_logic.dart
+# ==============================================================================
+# 🔒 SECURE FILES & FOLDERS (DO NOT PUSH TO GITHUB)
+# ==============================================================================
+
+# 1. Environment Variables (Sensitive API Keys)
+.env
+
+# 2. Flutter/Dart standard generated folders
 .dart_tool/
 build/
-.env
