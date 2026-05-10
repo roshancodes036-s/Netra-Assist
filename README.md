@@ -1,9 +1,9 @@
 # 👁️ Netra Assist — Inclusive Vision & Accessibility Suite  
-> **GNEC Hackathon 2026 Spring Submission** > *Empowering Vision with AI. Built for UN SDG 3 (Health & Well-being).*
+> **NEXA HACK 2026 Submission** | *For Students, By Students* > *Empowering Vision with AI. Built for real-world utility and UN SDG 3.*
 
 ![Powered By](https://img.shields.io/badge/Powered%20by-Gemini%20Flash-8E75B2?style=for-the-badge&logo=google&logoColor=white)
 ![Flutter](https://img.shields.io/badge/Built%20with-Flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white)
-![Hackathon](https://img.shields.io/badge/Hackathon-GNEC%20Social%20Good-FFCA28?style=for-the-badge)
+![Hackathon](https://img.shields.io/badge/Hackathon-Nexa%20Hack%202026-FFCA28?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 
 ---
@@ -12,7 +12,7 @@
 
 **Netra Assist is an advanced multimodal AI accessibility super-app.**
 
-It is designed entirely around **UN SDG 3 (Good Health and Well-being)** to serve as AI-powered “Digital Eyes” for visually impaired individuals. By leveraging state-of-the-art vision and voice models, it helps users navigate the world safely and independently.
+Built completely around the Nexa Hack philosophy: *Execution over theory. Build something people would actually use.* It is designed to serve as AI-powered “Digital Eyes” for visually impaired individuals. By leveraging state-of-the-art multimodal vision and voice models, it helps users navigate the world safely, read documents, and understand social cues independently.
 
 > **Netra Assist demonstrates the true power of AI for Social Good: Vision + Voice + Instant Reasoning.**
 
@@ -20,9 +20,9 @@ It is designed entirely around **UN SDG 3 (Good Health and Well-being)** to serv
 
 # 🔥 Innovation in 3 Lines (Judge Summary)
 
-✅ Real-time Vision assistant for blind safety & independent navigation.  
-✅ Multimodal hazard detection, PDF reading, and Emotion scanning.  
-✅ 100% Voice-First, accessible UI designed specifically for visually impaired users.  
+✅ **Real-world Utility:** Real-time Vision assistant for blind safety & independent navigation.  
+✅ **Disruptive Concept:** Multimodal hazard detection, PDF intelligence, and Emotion scanning in a single suite.  
+✅ **Design & Aesthetics:** 100% Voice-First, high-contrast accessible UI designed specifically for visually impaired users.  
 
 ---
 
@@ -47,25 +47,25 @@ Watch Netra Assist in action (Click below):
 
 ---
 
-# 🌍 The Problem (Why SDG 3?)
+# 🌍 The Problem 
 
-Technology is advancing, but it is leaving behind a massive vulnerable group:
+Technology is evolving faster than ever, but it is leaving behind a massive vulnerable group:
 
 ## 👁️ The Accessibility Gap
 Millions of visually impaired people struggle daily with:
-- Navigating safely in public spaces
-- Reading physical documents or digital PDFs
+- Navigating safely in public spaces without human reliance
+- Reading physical documents, currency notes, or digital PDFs
 - Understanding their surroundings and social cues
-- Maintaining independence in daily life
+- Maintaining true independence in daily life
 
 ---
 
 # 💡 The Solution: Netra Assist
 
-Netra Assist solves these critical challenges using multimodal AI intelligence:
-- **Vision Understanding** (Object detection & text reading)
-- **Voice-First Interface** (No complex typing needed)
-- **Ultra-Fast Responses** (Crucial for real-time safety)
+Netra Assist bridges the gap between disruptive ideas and execution using multimodal AI intelligence:
+- **Vision Understanding** (Object detection, text reading, currency recognition)
+- **Voice-First Interface** (No complex typing needed, entirely voice-operated)
+- **Ultra-Fast Responses** (Crucial for real-time safety and usability)
 
 ---
 
@@ -76,34 +76,17 @@ Uses AI Vision + Camera Stream to:
 - Detect objects in real-time
 - Identify hazards in the user's path
 - Narrate surroundings instantly via TTS
-
-Example:  
-> *“A car is ahead. Please move left.”*
-
----
+> *Example: “A car is ahead. Please move left.”*
 
 ### 🚗 Live Hazard Detection (Safety Autopilot)
-Detects physical dangers like:
-- Moving vehicles
-- Obstacles and pits
-- Unsafe walking paths
-
-Triggers: Voice warning: **“सावधान! (Caution!)”**
-
----
+Detects physical dangers like moving vehicles, obstacles, and pits.
+> *Triggers Voice warning: **“सावधान! (Caution!)”***
 
 ### 💵 Currency Recognition
 Identifies Indian Rupee notes instantly to prevent fraud and help in daily transactions.
 
----
-
 ### 📄 PDF Intelligence
-Upload any PDF and the AI will:
-- Summarize long text
-- Explain complex documents
-- Provide spoken narration in native languages
-
----
+Upload any PDF and the AI will summarize long text, explain complex documents, and provide spoken narration in native languages.
 
 ### ❓ Visual Question Answering (VQA)
 Capture an image and ask:
@@ -111,19 +94,11 @@ Capture an image and ask:
 - “Is this path safe to walk?”  
 The AI responds with precise visual reasoning.
 
----
-
 ### 🎙️ Voice Assistant (Hands-Free Control)
-Complete voice-first interaction for ultimate accessibility:
-- Ask without typing
-- Spoken answers for all queries
-- Full navigation support
-
----
+Complete voice-first interaction for ultimate accessibility. Ask without typing and receive spoken answers for all queries.
 
 ### 🙂 Face & Emotion Awareness
-Helps blind users understand social interactions by scanning faces and detecting emotions:
-- Happy, Sad, Angry, or Neutral.
+Helps blind users understand social interactions by scanning faces and detecting emotions (Happy, Sad, Angry, or Neutral).
 
 ---
 
@@ -132,19 +107,19 @@ Helps blind users understand social interactions by scanning faces and detecting
 | Layer | Technology |
 |------|------------|
 | Frontend | Flutter (Dart) |
-| AI Model | Google Gemini Flash |
+| AI Model | Google Gemini 1.5 Flash (Ultra-low latency) |
 | Vision | Camera + Image Picker |
 | Voice | Speech-to-Text + Flutter TTS |
 | Document Processing | Syncfusion PDF + Markdown |
-| Backend (Optional) | Firebase |
+| Backend | Firebase |
 
 ---
-### 🏆 Hackathon Note
+### 🏆 Nexa Hack Alignment
 
-Netra Assist is a working, inclusive AI product demonstrating real-world impact for **SDG 3 (Health and Well-being)**. 
+Netra Assist is a functional, scalable product built for the **Artificial Intelligence** & **Social Impact** arenas. 
 
-* **Accessibility Innovation:** Real-time help for the visually impaired.
-* **Social Good:** Using cutting-edge tech to solve human-centric problems.
+* **Thinking like a Founder:** Designed as a complete, market-ready accessibility ecosystem, not just a flashy demo.
+* **Problem Solving:** Challenges outdated systems by combining multiple accessibility tools into one seamless super-app.
 * **✅ Solo Developer Verification:** Please note that all commits from user **`roshancodes036-sudo`** belong to the **Sole Creator, Roshan Chaurasiya**.
 
 ---
@@ -158,6 +133,7 @@ For security reasons, the API key logic is **not included** in this public repos
 1. **Get API Key:** Get your free key from [Google AI Studio](https://aistudio.google.com/).
 2. **Create File:** Go to `lib/services/` folder and create a new file named **`ai_logic.dart`**.
 3. **Paste Code:** Copy and paste the following code into that file (Replace `YOUR_KEY` with your actual key):
+
 ```dart
 import 'dart:io';
 import 'package:google_generative_ai/google_generative_ai.dart';
@@ -237,14 +213,12 @@ class AIBrain {
 }
 
 ⚡ Run Locally
-1. Clone Repository
+Clone Repository:
 git clone [https://github.com/roshancodes036-sudo/Netra-Assist-AI.git](https://github.com/roshancodes036-sudo/Netra-Assist-AI.git)
 cd Netra-Assist-AI
 
-2. Install & Run
+Install & Run:
 flutter pub get
 flutter run
 
-👨‍💻 Author Roshan Chaurasiya 📍 Ghazipur, India
-
-Built with ❤️ to demonstrate the real-world impact of AI for Social Good.
+👨‍💻 Built by Roshan Chaurasiya 📍 Ghazipur, India Challenging ordinary thinking and building technology with purpose.
